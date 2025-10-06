@@ -56,7 +56,7 @@ function App() {
 
 	return (
 		<div style={{ display: "flex", height: "100vh" }}>
-			<Toolbox onAdd={handleAddBlock} />
+			<Toolbox onAddGate={handleAddBlock} />
 			<div
 				style={{ flex: 1, position: "relative", background: "#f0f0f0" }}
 			>

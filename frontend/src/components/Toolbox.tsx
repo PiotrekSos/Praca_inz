@@ -1,32 +1,63 @@
 import React from "react";
+import AndGate from "./gates/AndGate";
+import OrGate from "./gates/OrGate";
+import NotGate from "./gates/NotGate";
+import BufferGate from "./gates/BufferGate";
+import XorGate from "./gates/XorGate";
+import XnorGate from "./gates/XnorGate";
+import NandGate from "./gates/NandGate";
+import NorGate from "./gates/NorGate";
 
-export default function Toolbox({
-	onAdd,
-}: {
-	onAdd: (type: "NOR" | "NAND") => void;
-}) {
+const gates = [
+	{ type: "BUFFER", component: <BufferGate />, label: "BUF" },
+	{ type: "NOT", component: <NotGate />, label: "NOT" },
+	{ type: "AND", component: <AndGate />, label: "AND" },
+	{ type: "OR", component: <OrGate />, label: "OR" },
+	{ type: "XOR", component: <XorGate />, label: "XOR" },
+	{ type: "XNOR", component: <XnorGate />, label: "XNOR" },
+	{ type: "NAND", component: <NandGate />, label: "NAND" },
+	{ type: "NOR", component: <NorGate />, label: "NOR" },
+];
+
+const Toolbar = ({ onAddGate }: { onAddGate: (type: string) => void }) => {
 	return (
 		<div
 			style={{
-				width: 140,
-				background: "#eeeeee",
-				borderRight: "2px solid #ccc",
+				gap: "12px",
+				flexWrap: "wrap",
 				padding: 8,
 			}}
 		>
-			<h4>Toolbox</h4>
-			<button
-				onClick={() => onAdd("NOR")}
-				style={{ display: "block", width: "100%", marginTop: 8 }}
-			>
-				Add NOR
-			</button>
-			<button
-				onClick={() => onAdd("NAND")}
-				style={{ display: "block", width: "100%", marginTop: 8 }}
-			>
-				Add NAND
-			</button>
+			{gates.map(({ type, component, label }) => (
+				<div
+					key={type}
+					onClick={() => onAddGate(type)}
+					style={{
+						border: "1px solid #aaa",
+						borderRadius: 8,
+						padding: 8,
+						textAlign: "center",
+						cursor: "pointer",
+						width: 110,
+						background: "#f8f8f8",
+						boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+					}}
+				>
+					<div
+						style={{
+							height: 40,
+							display: "flex",
+							justifyContent: "center",
+							alignItems: "center",
+						}}
+					>
+						{component}
+					</div>
+					<div style={{ fontSize: 12, marginTop: 4 }}>{label}</div>
+				</div>
+			))}
 		</div>
 	);
-}
+};
+
+export default Toolbar;

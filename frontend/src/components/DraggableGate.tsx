@@ -1,5 +1,11 @@
 import React, { useState } from "react";
 import type { Block } from "../types.ts";
+import BufferGate from "./gates/BufferGate";
+import NotGate from "./gates/NotGate";
+import AndGate from "./gates/AndGate";
+import OrGate from "./gates/OrGate";
+import XorGate from "./gates/XorGate";
+import XnorGate from "./gates/XnorGate";
 import NorGate from "./gates/NorGate";
 import NandGate from "./gates/NandGate";
 
@@ -44,6 +50,12 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 				cursor: "move",
 			}}
 		>
+			{block.type === "BUFFER" && <BufferGate />}
+			{block.type === "NOT" && <NotGate />}
+			{block.type === "AND" && <AndGate />}
+			{block.type === "OR" && <OrGate />}
+			{block.type === "XOR" && <XorGate />}
+			{block.type === "XNOR" && <XnorGate />}
 			{block.type === "NOR" && <NorGate />}
 			{block.type === "NAND" && <NandGate />}
 

@@ -1,6 +1,6 @@
 import React from "react";
 
-const NandGate: React.FC = () => (
+const AndGate: React.FC = () => (
 	<svg width="100" height="60">
 		<path
 			d="M20,10 H60 A20,20 0 0,1 60,50 H20 Z"
@@ -8,15 +8,7 @@ const NandGate: React.FC = () => (
 			stroke="#1976d2"
 			strokeWidth="2"
 		/>
-		<circle
-			cx="85"
-			cy="30"
-			r="5"
-			stroke="#1976d2"
-			strokeWidth="2"
-			fill="white"
-		/>
 	</svg>
 );
 
-export default NandGate;
+export default AndGate;
