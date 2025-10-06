@@ -7,8 +7,18 @@ import XorGate from "./gates/XorGate";
 import XnorGate from "./gates/XnorGate";
 import NandGate from "./gates/NandGate";
 import NorGate from "./gates/NorGate";
+import ClockInput from "./blocks/ClockInput";
+import ConstOne from "./blocks/ConstOne";
+import ConstZero from "./blocks/ConstZero";
+import ToggleSwitch from "./blocks/ToggleSwitch";
+import LampOutput from "./blocks/LampOutput";
 
 const gates = [
+	{ type: "CLOCK", component: <ClockInput />, label: "CLOCK" },
+	{ type: "ONE", component: <ConstOne />, label: "1" },
+	{ type: "ZERO", component: <ConstZero />, label: "0" },
+	{ type: "TOGGLE", component: <ToggleSwitch />, label: "TOGGLE" },
+
 	{ type: "BUFFER", component: <BufferGate />, label: "BUF" },
 	{ type: "NOT", component: <NotGate />, label: "NOT" },
 	{ type: "AND", component: <AndGate />, label: "AND" },
@@ -17,6 +27,8 @@ const gates = [
 	{ type: "XNOR", component: <XnorGate />, label: "XNOR" },
 	{ type: "NAND", component: <NandGate />, label: "NAND" },
 	{ type: "NOR", component: <NorGate />, label: "NOR" },
+
+	{ type: "LAMP", component: <LampOutput />, label: "LAMP" },
 ];
 
 const Toolbar = ({ onAddGate }: { onAddGate: (type: string) => void }) => {

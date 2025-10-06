@@ -7,7 +7,7 @@ export type Connection = {
 	to: { blockId: number; pin: "input"; inputIndex: number };
 };
 
-export type GateType =
+export type BlockType =
 	| "BUFFER"
 	| "NOT"
 	| "AND"
@@ -15,11 +15,16 @@ export type GateType =
 	| "XOR"
 	| "XNOR"
 	| "NAND"
-	| "NOR";
+	| "NOR"
+	| "CLOCK"
+	| "ONE"
+	| "ZERO"
+	| "TOGGLE"
+	| "LAMP";
 
 export type Block = {
 	id: number;
-	type: GateType;
+	type: BlockType;
 	x: number;
 	y: number;
 };

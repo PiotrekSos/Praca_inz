@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import type { Block } from "../types.ts";
+
 import BufferGate from "./gates/BufferGate";
 import NotGate from "./gates/NotGate";
 import AndGate from "./gates/AndGate";
@@ -8,6 +9,12 @@ import XorGate from "./gates/XorGate";
 import XnorGate from "./gates/XnorGate";
 import NorGate from "./gates/NorGate";
 import NandGate from "./gates/NandGate";
+
+import ClockInput from "./blocks/ClockInput";
+import ConstOne from "./blocks/ConstOne";
+import ConstZero from "./blocks/ConstZero";
+import ToggleSwitch from "./blocks/ToggleSwitch";
+import LampOutput from "./blocks/LampOutput";
 
 type Props = {
 	block: Block;
@@ -36,6 +43,44 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 
 	const handleMouseUp = () => setDragging(false);
 
+	const renderBlock = () => {
+		switch (block.type) {
+			case "BUFFER":
+				return <BufferGate />;
+			case "NOT":
+				return <NotGate />;
+			case "AND":
+				return <AndGate />;
+			case "OR":
+				return <OrGate />;
+			case "XOR":
+				return <XorGate />;
+			case "XNOR":
+				return <XnorGate />;
+			case "NOR":
+				return <NorGate />;
+			case "NAND":
+				return <NandGate />;
+			case "CLOCK":
+				return <ClockInput />;
+			case "ONE":
+				return <ConstOne />;
+			case "ZERO":
+				return <ConstZero />;
+			case "TOGGLE":
+				return <ToggleSwitch />;
+			case "LAMP":
+				return <LampOutput />;
+			default:
+				return null;
+		}
+	};
+
+	const hasInputPins = !["CLOCK", "ONE", "ZERO", "TOGGLE"].includes(
+		block.type
+	);
+	const hasOutputPin = !["LAMP"].includes(block.type);
+
 	return (
 		<div
 			onMouseDown={handleMouseDown}
@@ -50,66 +95,63 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 				cursor: "move",
 			}}
 		>
-			{block.type === "BUFFER" && <BufferGate />}
-			{block.type === "NOT" && <NotGate />}
-			{block.type === "AND" && <AndGate />}
-			{block.type === "OR" && <OrGate />}
-			{block.type === "XOR" && <XorGate />}
-			{block.type === "XNOR" && <XnorGate />}
-			{block.type === "NOR" && <NorGate />}
-			{block.type === "NAND" && <NandGate />}
+			{renderBlock()}
 
-			{/* Input pins */}
-			<div
-				onMouseDown={(e) => {
-					e.stopPropagation();
-					onPinClick(block.id, "input", 0);
-				}}
-				style={{
-					position: "absolute",
-					left: -8,
-					top: 18,
-					width: 14,
-					height: 14,
-					borderRadius: "50%",
-					background: "#1976d2",
-					cursor: "crosshair",
-				}}
-			/>
-			<div
-				onMouseDown={(e) => {
-					e.stopPropagation();
-					onPinClick(block.id, "input", 1);
-				}}
-				style={{
-					position: "absolute",
-					left: -8,
-					top: 38,
-					width: 14,
-					height: 14,
-					borderRadius: "50%",
-					background: "#1976d2",
-					cursor: "crosshair",
-				}}
-			/>
+			{hasInputPins && (
+				<>
+					<div
+						onMouseDown={(e) => {
+							e.stopPropagation();
+							onPinClick(block.id, "input", 0);
+						}}
+						style={{
+							position: "absolute",
+							left: -8,
+							top: 18,
+							width: 14,
+							height: 14,
+							borderRadius: "50%",
+							background: "#1976d2",
+							cursor: "crosshair",
+						}}
+					/>
+					<div
+						onMouseDown={(e) => {
+							e.stopPropagation();
+							onPinClick(block.id, "input", 1);
+						}}
+						style={{
+							position: "absolute",
+							left: -8,
+							top: 38,
+							width: 14,
+							height: 14,
+							borderRadius: "50%",
+							background: "#1976d2",
+							cursor: "crosshair",
+						}}
+					/>
+				</>
+			)}
 
-			{/* Output pin */}
-			<div
-				onMouseDown={(e) => {
-					e.stopPropagation();
-					onPinClick(block.id, "output");
-				}}
-				style={{
-					position: "absolute",
-					right: -8,
-					top: 28,
-					width: 14,
-					height: 14,
-					borderRadius: "50%",
-					background: "tomato",
-					cursor: "crosshair",
-				}}
-			/>
+			{hasOutputPin && (
+				<div
+					onMouseDown={(e) => {
+						e.stopPropagation();
+						onPinClick(block.id, "output");
+					}}
+					style={{
+						position: "absolute",
+						right: -8,
+						top: 28,
+						width: 14,
+						height: 14,
+						borderRadius: "50%",
+						background: "tomato",
+						cursor: "crosshair",
+					}}
+				/>
+			)}
 		</div>
 	);
 };

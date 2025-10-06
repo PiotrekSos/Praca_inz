@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Toolbox from "./components/Toolbox";
 import DraggableGate from "./components/DraggableGate";
-import type { Block, Connection } from "./types.ts";
+import type { Block, Connection, BlockType } from "./types.ts";
 
 function App() {
 	const [blocks, setBlocks] = useState<Block[]>([]);
@@ -10,7 +10,7 @@ function App() {
 		from: { blockId: number } | null;
 	}>({ from: null });
 
-	const handleAddBlock = (type: "NOR" | "NAND") => {
+	const handleAddBlock = (type: BlockType) => {
 		const newBlock: Block = {
 			id: blocks.length,
 			type,
