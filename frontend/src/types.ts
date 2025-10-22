@@ -27,4 +27,6 @@ export type Block = {
 	type: BlockType;
 	x: number;
 	y: number;
+	inputs: number[];
+	output: number;
 };

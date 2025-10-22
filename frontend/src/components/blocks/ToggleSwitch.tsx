@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React from "react";
 
-const ToggleSwitch: React.FC = () => {
-	const [on, setOn] = useState(false);
+type ToggleSwitchProps = {
+	value: boolean;
+	onChange: (newValue: boolean) => void;
+};
 
+const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ value, onChange }) => {
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		setOn((prev) => !prev);
+		onChange(!value);
 	};
 
 	return (
@@ -28,12 +31,12 @@ const ToggleSwitch: React.FC = () => {
 				width="50"
 				height="20"
 				rx="10"
-				fill={on ? "#1976d2" : "#ccc"}
+				fill={value ? "#1976d2" : "#ccc"}
 				onMouseDown={handleClick}
 				cursor="pointer"
 			/>
 			<circle
-				cx={on ? 65 : 35}
+				cx={value ? 65 : 35}
 				cy="30"
 				r="8"
 				fill="white"

@@ -1,7 +1,72 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Toolbox from "./components/Toolbox";
 import DraggableGate from "./components/DraggableGate";
 import type { Block, Connection, BlockType } from "./types.ts";
+
+const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
+	const newBlocks = blocks.map((b) => ({ ...b, inputs: [...b.inputs] }));
+
+	for (const b of newBlocks) {
+		switch (b.type) {
+			case "ONE":
+				b.output = 1;
+				break;
+			case "ZERO":
+				b.output = 0;
+				break;
+			default:
+				break;
+		}
+	}
+
+	for (const b of newBlocks) b.inputs = b.inputs.map(() => 0);
+
+	for (const c of connections) {
+		const from = newBlocks.find((b) => b.id === c.from.blockId);
+		const to = newBlocks.find((b) => b.id === c.to.blockId);
+		if (!from || !to) continue;
+		if (to.inputs[c.to.inputIndex] !== undefined) {
+			to.inputs[c.to.inputIndex] = from.output;
+		}
+	}
+
+	for (const b of newBlocks) {
+		switch (b.type) {
+			case "AND":
+				b.output = b.inputs.every((v) => v === 1) ? 1 : 0;
+				break;
+			case "OR":
+				b.output = b.inputs.some((v) => v === 1) ? 1 : 0;
+				break;
+			case "NOT":
+				b.output = b.inputs[0] ? 0 : 1;
+				break;
+			case "NAND":
+				b.output = b.inputs.every((v) => v === 1) ? 0 : 1;
+				break;
+			case "NOR":
+				b.output = b.inputs.some((v) => v === 1) ? 0 : 1;
+				break;
+			case "XOR":
+				b.output = b.inputs.reduce((a, b) => a ^ b, 0);
+				break;
+			case "XNOR":
+				b.output = b.inputs.reduce((a, b) => a ^ b, 0) ? 0 : 1;
+				break;
+			case "BUFFER":
+				b.output = b.inputs[0];
+				break;
+			case "TOGGLE":
+			case "CLOCK":
+			case "ONE":
+			case "ZERO":
+			case "LAMP":
+				break;
+		}
+	}
+
+	return newBlocks;
+};
 
 function App() {
 	const [blocks, setBlocks] = useState<Block[]>([]);
@@ -11,12 +76,21 @@ function App() {
 	}>({ from: null });
 
 	const handleAddBlock = (type: BlockType) => {
+		const inputCount = ["NOT", "BUFFER", "LAMP"].includes(type)
+			? 1
+			: ["CLOCK", "ONE", "ZERO", "TOGGLE"].includes(type)
+			? 0
+			: 2;
+
 		const newBlock: Block = {
 			id: blocks.length,
 			type,
 			x: 200 + blocks.length * 40,
 			y: 100 + blocks.length * 40,
+			inputs: new Array(inputCount).fill(0),
+			output: 0,
 		};
+
 		setBlocks((prev) => [...prev, newBlock]);
 	};
 
@@ -38,7 +112,11 @@ function App() {
 				...prev,
 				{
 					from: { blockId: pending.from.blockId, pin: "output" },
-					to: { blockId, pin: "input", inputIndex: inputIndex ?? 0 },
+					to: {
+						blockId,
+						pin: "input",
+						inputIndex: inputIndex ?? 0,
+					},
 				},
 			]);
 			setPending({ from: null });
@@ -54,11 +132,19 @@ function App() {
 		y: block.y + 20 + idx * 20,
 	});
 
+	useEffect(() => {
+		setBlocks((prev) => evaluateCircuit(prev, connections));
+	}, [connections, blocks]);
+
 	return (
 		<div style={{ display: "flex", height: "100vh" }}>
 			<Toolbox onAddGate={handleAddBlock} />
 			<div
-				style={{ flex: 1, position: "relative", background: "#f0f0f0" }}
+				style={{
+					flex: 1,
+					position: "relative",
+					background: "#f0f0f0",
+				}}
 			>
 				{/* Linie */}
 				<svg
@@ -81,6 +167,8 @@ function App() {
 						if (!fromBlock || !toBlock) return null;
 						const from = getOutputPos(fromBlock);
 						const to = getInputPos(toBlock, c.to.inputIndex);
+
+						const isHigh = fromBlock.output === 1;
 						return (
 							<line
 								key={i}
@@ -88,7 +176,7 @@ function App() {
 								y1={from.y}
 								x2={to.x}
 								y2={to.y}
-								stroke="#1976d2"
+								stroke={isHigh ? "green" : "#1976d2"}
 								strokeWidth={3}
 							/>
 						);

@@ -1,4 +1,3 @@
-import React from "react";
 import AndGate from "./gates/AndGate";
 import OrGate from "./gates/OrGate";
 import NotGate from "./gates/NotGate";

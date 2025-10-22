@@ -62,15 +62,30 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 			case "NAND":
 				return <NandGate />;
 			case "CLOCK":
-				return <ClockInput />;
+				return (
+					<ClockInput
+						onChange={(newValue) => {
+							block.output = newValue;
+							onMove(block.id, block.x, block.y); // odświeża widok
+						}}
+					/>
+				);
 			case "ONE":
 				return <ConstOne />;
 			case "ZERO":
 				return <ConstZero />;
 			case "TOGGLE":
-				return <ToggleSwitch />;
+				return (
+					<ToggleSwitch
+						value={block.output === 1}
+						onChange={(newValue) => {
+							block.output = newValue ? 1 : 0;
+							onMove(block.id, block.x, block.y);
+						}}
+					/>
+				);
 			case "LAMP":
-				return <LampOutput />;
+				return <LampOutput isOn={block.inputs?.[0] === 1} />;
 			default:
 				return null;
 		}
@@ -97,17 +112,18 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 		>
 			{renderBlock()}
 
-			{hasInputPins && (
-				<>
+			{hasInputPins &&
+				block.inputs?.map((_, idx) => (
 					<div
+						key={idx}
 						onMouseDown={(e) => {
 							e.stopPropagation();
-							onPinClick(block.id, "input", 0);
+							onPinClick(block.id, "input", idx);
 						}}
 						style={{
 							position: "absolute",
 							left: -8,
-							top: 18,
+							top: 18 + idx * 20,
 							width: 14,
 							height: 14,
 							borderRadius: "50%",
@@ -115,24 +131,7 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 							cursor: "crosshair",
 						}}
 					/>
-					<div
-						onMouseDown={(e) => {
-							e.stopPropagation();
-							onPinClick(block.id, "input", 1);
-						}}
-						style={{
-							position: "absolute",
-							left: -8,
-							top: 38,
-							width: 14,
-							height: 14,
-							borderRadius: "50%",
-							background: "#1976d2",
-							cursor: "crosshair",
-						}}
-					/>
-				</>
-			)}
+				))}
 
 			{hasOutputPin && (
 				<div
