@@ -19,7 +19,9 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 		}
 	}
 
-	for (const b of newBlocks) b.inputs = b.inputs.map(() => 0);
+	for (const b of newBlocks) {
+		b.inputs = b.inputs.map(() => 0);
+	}
 
 	for (const c of connections) {
 		const from = newBlocks.find((b) => b.id === c.from.blockId);
@@ -54,13 +56,12 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 				b.output = b.inputs.reduce((a, b) => a ^ b, 0) ? 0 : 1;
 				break;
 			case "BUFFER":
-				b.output = b.inputs[0];
+				b.output = b.inputs[0] || 0;
 				break;
 			case "TOGGLE":
 			case "CLOCK":
 			case "ONE":
 			case "ZERO":
-			case "LAMP":
 				break;
 		}
 	}
@@ -91,13 +92,28 @@ function App() {
 			output: 0,
 		};
 
-		setBlocks((prev) => [...prev, newBlock]);
+		setBlocks((prev) => evaluateCircuit([...prev, newBlock], connections));
 	};
 
-	const handleMove = (id: number, x: number, y: number) => {
-		setBlocks((prev) =>
-			prev.map((b) => (b.id === id ? { ...b, x, y } : b))
-		);
+	const handleMove = (
+		id: number,
+		x: number,
+		y: number,
+		newOutput?: number
+	) => {
+		setBlocks((prev) => {
+			const updated = prev.map((b) => {
+				if (b.id === id) {
+					const updatedBlock = { ...b, x, y };
+					if (newOutput !== undefined) {
+						updatedBlock.output = newOutput;
+					}
+					return updatedBlock;
+				}
+				return b;
+			});
+			return evaluateCircuit(updated, connections);
+		});
 	};
 
 	const handlePinClick = (
@@ -108,8 +124,8 @@ function App() {
 		if (pin === "output" && !pending.from) {
 			setPending({ from: { blockId } });
 		} else if (pin === "input" && pending.from) {
-			setConnections((prev) => [
-				...prev,
+			const newConnections = [
+				...connections,
 				{
 					from: { blockId: pending.from.blockId, pin: "output" },
 					to: {
@@ -118,7 +134,9 @@ function App() {
 						inputIndex: inputIndex ?? 0,
 					},
 				},
-			]);
+			];
+			setConnections(newConnections);
+			setBlocks((prev) => evaluateCircuit(prev, newConnections));
 			setPending({ from: null });
 		}
 	};
@@ -133,8 +151,19 @@ function App() {
 	});
 
 	useEffect(() => {
-		setBlocks((prev) => evaluateCircuit(prev, connections));
-	}, [connections, blocks]);
+		const interval = setInterval(() => {
+			setBlocks((prev) => {
+				const updated = prev.map((b) =>
+					b.type === "CLOCK"
+						? { ...b, output: b.output === 1 ? 0 : 1 }
+						: b
+				);
+				return evaluateCircuit(updated, connections);
+			});
+		}, 1000);
+
+		return () => clearInterval(interval);
+	}, [connections]);
 
 	return (
 		<div style={{ display: "flex", height: "100vh" }}>

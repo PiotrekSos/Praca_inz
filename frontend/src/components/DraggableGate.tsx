@@ -18,7 +18,7 @@ import LampOutput from "./blocks/LampOutput";
 
 type Props = {
 	block: Block;
-	onMove: (id: number, x: number, y: number) => void;
+	onMove: (id: number, x: number, y: number, newOutput?: number) => void;
 	onPinClick: (
 		blockId: number,
 		pin: "input" | "output",
@@ -62,14 +62,7 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 			case "NAND":
 				return <NandGate />;
 			case "CLOCK":
-				return (
-					<ClockInput
-						onChange={(newValue) => {
-							block.output = newValue;
-							onMove(block.id, block.x, block.y); // odświeża widok
-						}}
-					/>
-				);
+				return <ClockInput value={block.output} />;
 			case "ONE":
 				return <ConstOne />;
 			case "ZERO":
@@ -79,8 +72,12 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 					<ToggleSwitch
 						value={block.output === 1}
 						onChange={(newValue) => {
-							block.output = newValue ? 1 : 0;
-							onMove(block.id, block.x, block.y);
+							onMove(
+								block.id,
+								block.x,
+								block.y,
+								newValue ? 1 : 0
+							);
 						}}
 					/>
 				);
