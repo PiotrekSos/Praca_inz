@@ -28,7 +28,11 @@ export type BlockType =
 	| "NAND_4"
 	| "NAND_8"
 	| "NOR_4"
-	| "NOR_8";
+	| "NOR_8"
+	| "MUX4"
+	| "DEMUX4"
+	| "MUX16"
+	| "DEMUX16";
 
 export type Block = {
 	id: number;

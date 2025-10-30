@@ -58,6 +58,7 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 			case "BUFFER":
 				b.outputs[0] = b.inputs[0] || 0;
 				break;
+
 			case "D_FLIPFLOP": {
 				const [D, CLK] = b.inputs;
 				if (!("state" in b)) b.state = 0;
@@ -98,10 +99,7 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 				b.outputs[1] = Number(!b.state);
 				break;
 			}
-			case "TOGGLE":
-			case "CLOCK":
-			case "ONE":
-			case "ZERO":
+
 			case "NAND_4": {
 				b.outputs[0] = b.inputs.every((v) => v === 1) ? 0 : 1;
 				break;
@@ -118,6 +116,53 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 				b.outputs[0] = b.inputs.some((v) => v === 1) ? 0 : 1;
 				break;
 			}
+
+			case "MUX4": {
+				// inputs: I0, I1, I2, I3, A1, A2
+				const dataInputs = b.inputs.slice(0, 4);
+				const selectBits = b.inputs.slice(4, 6);
+				const sel = (selectBits[0] << 1) | selectBits[1]; // 2 bity = 4 kombinacje
+				b.outputs[0] = dataInputs[sel] ?? 0;
+				break;
+			}
+			case "MUX16": {
+				// inputs: I0–I15, A1–A4
+				const dataInputs = b.inputs.slice(0, 16);
+				const selectBits = b.inputs.slice(16, 20);
+				const sel =
+					(selectBits[0] << 3) |
+					(selectBits[1] << 2) |
+					(selectBits[2] << 1) |
+					selectBits[3];
+				b.outputs[0] = dataInputs[sel] ?? 0;
+				break;
+			}
+			case "DEMUX4": {
+				// inputs: IN, A1, A2
+				const IN = b.inputs[0];
+				const selectBits = b.inputs.slice(1, 3);
+				const sel = (selectBits[0] << 1) | selectBits[1];
+				b.outputs = [0, 0, 0, 0];
+				if (IN === 1) b.outputs[sel] = 1;
+				break;
+			}
+			case "DEMUX16": {
+				// inputs: IN, A1–A4
+				const IN = b.inputs[0];
+				const selectBits = b.inputs.slice(1, 5);
+				const sel =
+					(selectBits[0] << 3) |
+					(selectBits[1] << 2) |
+					(selectBits[2] << 1) |
+					selectBits[3];
+				b.outputs = new Array(16).fill(0);
+				if (IN === 1) b.outputs[sel] = 1;
+				break;
+			}
+			case "TOGGLE":
+			case "CLOCK":
+			case "ONE":
+			case "ZERO":
 			default:
 				break;
 		}
@@ -138,12 +183,18 @@ function App() {
 			? 1
 			: ["CLOCK", "ONE", "ZERO", "TOGGLE"].includes(type)
 			? 0
-			: ["JK_FLIPFLOP", "SR_FLIPFLOP"].includes(type)
+			: ["JK_FLIPFLOP", "SR_FLIPFLOP", "DEMUX4"].includes(type)
 			? 3
 			: ["NAND_4", "NOR_4"].includes(type)
 			? 4
 			: ["NAND_8", "NOR_8"].includes(type)
 			? 8
+			: ["MUX4"].includes(type)
+			? 6
+			: ["MUX16"].includes(type)
+			? 20
+			: ["DEMUX16"].includes(type)
+			? 5
 			: 2;
 
 		const outputCount = [
@@ -155,6 +206,10 @@ function App() {
 			? 2
 			: ["LAMP"].includes(type)
 			? 0
+			: ["DEMUX4"].includes(type)
+			? 4
+			: ["DEMUX16"].includes(type)
+			? 16
 			: 1;
 
 		const newBlock: Block = {
@@ -245,10 +300,52 @@ function App() {
 		};
 	};
 
-	const getInputPos = (block: Block, idx: number) => ({
-		x: block.x,
-		y: block.y + 20 + idx * 20,
-	});
+	const getInputPos = (block: Block, idx: number) => {
+		switch (block.type) {
+			case "MUX4": {
+				// 4 wejścia danych (0–3) po lewej, 2 sterujące (4–5) na dole
+				if (idx < 4) {
+					return { x: block.x, y: block.y + 20 + idx * 20 };
+				} else {
+					const ctrlIdx = idx - 4;
+					return { x: block.x + 25 + ctrlIdx * 20, y: block.y + 100 };
+				}
+			}
+
+			case "MUX16": {
+				// 16 danych (0–15) po lewej, 4 sterujące (16–19) na dole
+				if (idx < 16) {
+					return { x: block.x, y: block.y + 10 + idx * 10 };
+				} else {
+					const ctrlIdx = idx - 16;
+					return { x: block.x + 40 + ctrlIdx * 20, y: block.y + 180 };
+				}
+			}
+
+			case "DEMUX4": {
+				// wejście danych (0) po lewej, 2 sterujące (1–2) na dole
+				if (idx === 0) {
+					return { x: block.x, y: block.y + 40 };
+				} else {
+					const ctrlIdx = idx - 1;
+					return { x: block.x + 25 + ctrlIdx * 20, y: block.y + 100 };
+				}
+			}
+
+			case "DEMUX16": {
+				// wejście danych (0) po lewej, 4 sterujące (1–4) na dole
+				if (idx === 0) {
+					return { x: block.x, y: block.y + 60 };
+				} else {
+					const ctrlIdx = idx - 1;
+					return { x: block.x + 40 + ctrlIdx * 20, y: block.y + 180 };
+				}
+			}
+
+			default:
+				return { x: block.x, y: block.y + 20 + idx * 20 };
+		}
+	};
 
 	useEffect(() => {
 		const interval = setInterval(() => {

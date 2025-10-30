@@ -19,6 +19,10 @@ import NorGate4 from "./gates/NorGate4";
 import NorGate8 from "./gates/NorGate8";
 import NandGate4 from "./gates/NandGate4";
 import NandGate8 from "./gates/NandGate8";
+import Mux16 from "./gates/Mux16";
+import Demux16 from "./gates/Demux16";
+import Mux4 from "./gates/Mux4";
+import Demux4 from "./gates/Demux4";
 
 const gates = [
 	{ type: "CLOCK", component: <ClockInput />, label: "CLOCK" },
@@ -41,10 +45,16 @@ const gates = [
 	{ type: "T_FLIPFLOP", component: <TFlipFlop />, label: "T FF" },
 	{ type: "JK_FLIPFLOP", component: <JKFlipFlop />, label: "JK FF" },
 	{ type: "SR_FLIPFLOP", component: <SRFlipFlop />, label: "SR FF" },
+
 	{ type: "NAND_4", component: <NandGate4 />, label: "4-input NAND" },
 	{ type: "NAND_8", component: <NandGate8 />, label: "8-input NAND" },
 	{ type: "NOR_4", component: <NorGate4 />, label: "4-input NOR" },
 	{ type: "NOR_8", component: <NorGate8 />, label: "8-input NOR" },
+
+	{ type: "MUX4", component: <Mux4 />, label: "4-to-1 MUX" },
+	{ type: "DEMUX4", component: <Demux4 />, label: "1-to-4 DEMUX" },
+	{ type: "MUX16", component: <Mux16 />, label: "16-to-1 MUX" },
+	{ type: "DEMUX16", component: <Demux16 />, label: "1-to-16 DEMUX" },
 ];
 
 const Toolbar = ({ onAddGate }: { onAddGate: (type: string) => void }) => {
