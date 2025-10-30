@@ -3,8 +3,8 @@ export type PinType = "input" | "output";
 export type PinPosition = { x: number; y: number; type: PinType };
 
 export type Connection = {
-	from: { blockId: number; pin: "output" };
-	to: { blockId: number; pin: "input"; inputIndex: number };
+	from: { blockId: number; pin: string };
+	to: { blockId: number; pin: string; inputIndex: number };
 };
 
 export type BlockType =
@@ -20,7 +20,15 @@ export type BlockType =
 	| "ONE"
 	| "ZERO"
 	| "TOGGLE"
-	| "LAMP";
+	| "LAMP"
+	| "D_FLIPFLOP"
+	| "T_FLIPFLOP"
+	| "JK_FLIPFLOP"
+	| "SR_FLIPFLOP"
+	| "NAND_4"
+	| "NAND_8"
+	| "NOR_4"
+	| "NOR_8";
 
 export type Block = {
 	id: number;
@@ -28,5 +36,7 @@ export type Block = {
 	x: number;
 	y: number;
 	inputs: number[];
-	output: number;
+	outputs: number[];
+	state?: number;
+	prevClock?: number;
 };

@@ -11,6 +11,14 @@ import ConstOne from "./blocks/ConstOne";
 import ConstZero from "./blocks/ConstZero";
 import ToggleSwitch from "./blocks/ToggleSwitch";
 import LampOutput from "./blocks/LampOutput";
+import DFlipFlop from "./gates/DFlipFlop";
+import TFlipFlop from "./gates/TFlipFlop";
+import JKFlipFlop from "./gates/JKFlipFlop";
+import SRFlipFlop from "./gates/SRFlipFlop";
+import NorGate4 from "./gates/NorGate4";
+import NorGate8 from "./gates/NorGate8";
+import NandGate4 from "./gates/NandGate4";
+import NandGate8 from "./gates/NandGate8";
 
 const gates = [
 	{ type: "CLOCK", component: <ClockInput />, label: "CLOCK" },
@@ -28,6 +36,15 @@ const gates = [
 	{ type: "NOR", component: <NorGate />, label: "NOR" },
 
 	{ type: "LAMP", component: <LampOutput />, label: "LAMP" },
+
+	{ type: "D_FLIPFLOP", component: <DFlipFlop />, label: "D FF" },
+	{ type: "T_FLIPFLOP", component: <TFlipFlop />, label: "T FF" },
+	{ type: "JK_FLIPFLOP", component: <JKFlipFlop />, label: "JK FF" },
+	{ type: "SR_FLIPFLOP", component: <SRFlipFlop />, label: "SR FF" },
+	{ type: "NAND_4", component: <NandGate4 />, label: "4-input NAND" },
+	{ type: "NAND_8", component: <NandGate8 />, label: "8-input NAND" },
+	{ type: "NOR_4", component: <NorGate4 />, label: "4-input NOR" },
+	{ type: "NOR_8", component: <NorGate8 />, label: "8-input NOR" },
 ];
 
 const Toolbar = ({ onAddGate }: { onAddGate: (type: string) => void }) => {

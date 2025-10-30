@@ -15,6 +15,14 @@ import ConstOne from "./blocks/ConstOne";
 import ConstZero from "./blocks/ConstZero";
 import ToggleSwitch from "./blocks/ToggleSwitch";
 import LampOutput from "./blocks/LampOutput";
+import DFlipFlop from "./gates/DFlipFlop.tsx";
+import TFlipFlop from "./gates/TFlipFlop.tsx";
+import JKFlipFlop from "./gates/JKFlipFlop.tsx";
+import SRFlipFlop from "./gates/SRFlipFlop.tsx";
+import NorGate4 from "./gates/NorGate4.tsx";
+import NorGate8 from "./gates/NorGate8.tsx";
+import NandGate4 from "./gates/NandGate4.tsx";
+import NandGate8 from "./gates/NandGate8.tsx";
 
 type Props = {
 	block: Block;
@@ -62,7 +70,7 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 			case "NAND":
 				return <NandGate />;
 			case "CLOCK":
-				return <ClockInput value={block.output} />;
+				return <ClockInput value={block.outputs[0]} />;
 			case "ONE":
 				return <ConstOne />;
 			case "ZERO":
@@ -70,7 +78,7 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 			case "TOGGLE":
 				return (
 					<ToggleSwitch
-						value={block.output === 1}
+						value={block.outputs[0] === 1}
 						onChange={(newValue) => {
 							onMove(
 								block.id,
@@ -81,8 +89,24 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 						}}
 					/>
 				);
+			case "D_FLIPFLOP":
+				return <DFlipFlop />;
+			case "T_FLIPFLOP":
+				return <TFlipFlop />;
+			case "JK_FLIPFLOP":
+				return <JKFlipFlop />;
+			case "SR_FLIPFLOP":
+				return <SRFlipFlop />;
 			case "LAMP":
 				return <LampOutput isOn={block.inputs?.[0] === 1} />;
+			case "NAND_4":
+				return <NandGate4 />;
+			case "NAND_8":
+				return <NandGate8 />;
+			case "NOR_4":
+				return <NorGate4 />;
+			case "NOR_8":
+				return <NorGate8 />;
 			default:
 				return null;
 		}
@@ -102,9 +126,20 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 				position: "absolute",
 				left: block.x,
 				top: block.y,
-				width: 100,
-				height: 60,
 				cursor: "move",
+				overflow: "visible",
+				width:
+					block.type === "NAND_8" || block.type === "NOR_8"
+						? 160
+						: block.type === "NAND_4" || block.type === "NOR_4"
+						? 120
+						: 100,
+				height:
+					block.type === "NAND_8" || block.type === "NOR_8"
+						? 160
+						: block.type === "NAND_4" || block.type === "NOR_4"
+						? 100
+						: 60,
 			}}
 		>
 			{renderBlock()}
@@ -130,24 +165,46 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 					/>
 				))}
 
-			{hasOutputPin && (
-				<div
-					onMouseDown={(e) => {
-						e.stopPropagation();
-						onPinClick(block.id, "output");
-					}}
-					style={{
-						position: "absolute",
-						right: -8,
-						top: 28,
-						width: 14,
-						height: 14,
-						borderRadius: "50%",
-						background: "tomato",
-						cursor: "crosshair",
-					}}
-				/>
-			)}
+			{hasOutputPin &&
+				(() => {
+					let right = -8;
+					let top = 28;
+
+					switch (block.type) {
+						case "NAND_4":
+						case "NOR_4":
+							right = -40;
+							top = 43;
+							break;
+						case "NAND_8":
+						case "NOR_8":
+							right = -10;
+							top = 83;
+							break;
+						default:
+							break;
+					}
+
+					return (
+						<div
+							onMouseDown={(e) => {
+								e.stopPropagation();
+								onPinClick(block.id, "output");
+								onPinClick(block.id, "output");
+							}}
+							style={{
+								position: "absolute",
+								right,
+								top,
+								width: 14,
+								height: 14,
+								borderRadius: "50%",
+								background: "tomato",
+								cursor: "crosshair",
+							}}
+						/>
+					);
+				})()}
 		</div>
 	);
 };
