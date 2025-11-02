@@ -19,7 +19,7 @@ const Demux4: React.FC = () => (
 			<text
 				key={i}
 				x="70"
-				y={28 + i * 20}
+				y={28 + i * 18}
 				fontSize="10"
 				fill="#1976d2"
 				fontWeight="bold"

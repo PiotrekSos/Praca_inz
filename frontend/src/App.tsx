@@ -195,6 +195,8 @@ function App() {
 			? 20
 			: ["DEMUX16"].includes(type)
 			? 5
+			: ["LABEL"].includes(type)
+			? 0
 			: 2;
 
 		const outputCount = [
@@ -204,7 +206,7 @@ function App() {
 			"T_FLIPFLOP",
 		].includes(type)
 			? 2
-			: ["LAMP"].includes(type)
+			: ["LAMP", "LABEL"].includes(type)
 			? 0
 			: ["DEMUX4"].includes(type)
 			? 4

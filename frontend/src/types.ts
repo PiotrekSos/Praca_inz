@@ -32,7 +32,8 @@ export type BlockType =
 	| "MUX4"
 	| "DEMUX4"
 	| "MUX16"
-	| "DEMUX16";
+	| "DEMUX16"
+	| "LABEL";
 
 export type Block = {
 	id: number;
@@ -43,4 +44,5 @@ export type Block = {
 	outputs: number[];
 	state?: number;
 	prevClock?: number;
+	text?: string;
 };

@@ -55,6 +55,13 @@ const gates = [
 	{ type: "DEMUX4", component: <Demux4 />, label: "1-to-4 DEMUX" },
 	{ type: "MUX16", component: <Mux16 />, label: "16-to-1 MUX" },
 	{ type: "DEMUX16", component: <Demux16 />, label: "1-to-16 DEMUX" },
+	{
+		type: "LABEL",
+		component: (
+			<div style={{ fontFamily: "monospace", fontSize: 24 }}>Label</div>
+		),
+		label: "LABEL",
+	},
 ];
 
 const Toolbar = ({ onAddGate }: { onAddGate: (type: string) => void }) => {

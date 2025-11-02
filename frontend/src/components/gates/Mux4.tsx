@@ -18,7 +18,7 @@ const Mux4: React.FC = () => (
 			<React.Fragment key={`in${i}`}>
 				<text
 					x="25"
-					y={28 + i * 20}
+					y={26 + i * 18}
 					fontSize="10"
 					fill="#1976d2"
 					fontWeight="bold"

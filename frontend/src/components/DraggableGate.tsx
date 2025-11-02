@@ -27,6 +27,7 @@ import Mux16 from "./gates/Mux16.tsx";
 import Demux16 from "./gates/Demux16.tsx";
 import Mux4 from "./gates/Mux4.tsx";
 import Demux4 from "./gates/Demux4.tsx";
+import LabelBlock from "./blocks/LabelBlock";
 
 type Props = {
 	block: Block;
@@ -119,6 +120,16 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 				return <Mux4 />;
 			case "DEMUX4":
 				return <Demux4 />;
+			case "LABEL":
+				return (
+					<LabelBlock
+						text={block.text}
+						onChange={(newText) => {
+							onMove(block.id, block.x, block.y);
+							block.text = newText;
+						}}
+					/>
+				);
 			default:
 				return null;
 		}
@@ -177,7 +188,7 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										style={{
 											position: "absolute",
 											left: -8,
-											top: 20 + idx * 20,
+											top: 17 + idx * 18,
 											width: 14,
 											height: 14,
 											borderRadius: "50%",
@@ -345,8 +356,8 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										}}
 										style={{
 											position: "absolute",
-											left: 25 + idx * 20,
-											bottom: -8,
+											left: 35 + idx * 20,
+											bottom: 58,
 											width: 14,
 											height: 14,
 											borderRadius: "50%",
@@ -367,7 +378,7 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										style={{
 											position: "absolute",
 											right: -8,
-											top: 20 + idx * 15,
+											top: 17 + idx * 18,
 											width: 14,
 											height: 14,
 											borderRadius: "50%",
@@ -452,9 +463,92 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 							</>
 						);
 					}
+					case "LABEL": {
+						// brak pinów
+						return null;
+					}
 
+					case "D_FLIPFLOP":
+					case "T_FLIPFLOP":
+					case "JK_FLIPFLOP":
+					case "SR_FLIPFLOP": {
+						return (
+							<>
+								{/* --- wejścia --- */}
+								{block.inputs?.map((_, idx) => (
+									<div
+										key={`ff-in-${idx}`}
+										onMouseDown={(e) => {
+											e.stopPropagation();
+											onPinClick(block.id, "input", idx);
+										}}
+										style={{
+											position: "absolute",
+											left: -8,
+											top: 20 + idx * 20,
+											width: 14,
+											height: 14,
+											borderRadius: "50%",
+											background: "#1976d2",
+											cursor: "crosshair",
+										}}
+										title={
+											block.type === "D_FLIPFLOP"
+												? ["D", "CLK"][idx]
+												: block.type === "T_FLIPFLOP"
+												? ["T", "CLK"][idx]
+												: block.type === "JK_FLIPFLOP"
+												? ["J", "K", "CLK"][idx]
+												: ["S", "R", "CLK"][idx]
+										}
+									/>
+								))}
+
+								{/* --- wyjście Q --- */}
+								<div
+									onMouseDown={(e) => {
+										e.stopPropagation();
+										onPinClick(block.id, "output", 0);
+									}}
+									style={{
+										position: "absolute",
+										right: -8,
+										top: 25,
+										width: 14,
+										height: 14,
+										borderRadius: "50%",
+										background: "tomato",
+										cursor: "crosshair",
+									}}
+									title="Q"
+								/>
+
+								{/* --- wyjście ¬Q --- */}
+								<div
+									onMouseDown={(e) => {
+										e.stopPropagation();
+										onPinClick(block.id, "output", 1);
+									}}
+									style={{
+										position: "absolute",
+										right: -8,
+										top:
+											block.type === "D_FLIPFLOP" ||
+											block.type === "T_FLIPFLOP"
+												? 45
+												: 55,
+										width: 14,
+										height: 14,
+										borderRadius: "50%",
+										background: "tomato",
+										cursor: "crosshair",
+									}}
+									title="¬Q"
+								/>
+							</>
+						);
+					}
 					default: {
-						// --- pozostałe typy jak dotychczas ---
 						return (
 							<>
 								{hasInputPins &&
@@ -482,24 +576,49 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										/>
 									))}
 
-								{hasOutputPin && (
-									<div
-										onMouseDown={(e) => {
-											e.stopPropagation();
-											onPinClick(block.id, "output");
-										}}
-										style={{
-											position: "absolute",
-											right: -8,
-											top: 28,
-											width: 14,
-											height: 14,
-											borderRadius: "50%",
-											background: "tomato",
-											cursor: "crosshair",
-										}}
-									/>
-								)}
+								{/* --- wyjście (uniwersalne + specjalne przypadki) --- */}
+								{hasOutputPin &&
+									(() => {
+										let right = -8;
+										let top = 28;
+
+										switch (block.type) {
+											case "NAND_4":
+											case "NOR_4":
+												right = -40;
+												top = 43;
+												break;
+											case "NAND_8":
+											case "NOR_8":
+												right = -10;
+												top = 83;
+												break;
+											default:
+												break;
+										}
+
+										return (
+											<div
+												onMouseDown={(e) => {
+													e.stopPropagation();
+													onPinClick(
+														block.id,
+														"output"
+													);
+												}}
+												style={{
+													position: "absolute",
+													right,
+													top,
+													width: 14,
+													height: 14,
+													borderRadius: "50%",
+													background: "tomato",
+													cursor: "crosshair",
+												}}
+											/>
+										);
+									})()}
 							</>
 						);
 					}
