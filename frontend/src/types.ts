@@ -3,8 +3,16 @@ export type PinType = "input" | "output";
 export type PinPosition = { x: number; y: number; type: PinType };
 
 export type Connection = {
-	from: { blockId: number; pin: string };
-	to: { blockId: number; pin: string; inputIndex: number };
+	from: {
+		blockId: number;
+		pin: string;
+		outputIndex?: number;
+	};
+	to: {
+		blockId: number;
+		pin: string;
+		inputIndex: number;
+	};
 };
 
 export type BlockType =

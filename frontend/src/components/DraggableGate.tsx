@@ -158,7 +158,9 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 						? 120
 						: 100,
 				height:
-					block.type === "NAND_8" || block.type === "NOR_8"
+					block.type === "MUX16" || block.type === "DEMUX16"
+						? 320
+						: block.type === "NAND_8" || block.type === "NOR_8"
 						? 160
 						: block.type === "NAND_4" || block.type === "NOR_4"
 						? 100

@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "lucide-react": "^0.552.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-grid-layout": "^1.5.2"

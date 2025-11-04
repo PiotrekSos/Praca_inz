@@ -1,3 +1,5 @@
+import { useState, useRef, useEffect } from "react";
+import { ChevronDown, ChevronRight, ChevronLeft } from "lucide-react";
 import AndGate from "./gates/AndGate";
 import OrGate from "./gates/OrGate";
 import NotGate from "./gates/NotGate";
@@ -24,85 +26,288 @@ import Demux16 from "./gates/Demux16";
 import Mux4 from "./gates/Mux4";
 import Demux4 from "./gates/Demux4";
 
-const gates = [
-	{ type: "CLOCK", component: <ClockInput />, label: "CLOCK" },
-	{ type: "ONE", component: <ConstOne />, label: "1" },
-	{ type: "ZERO", component: <ConstZero />, label: "0" },
-	{ type: "TOGGLE", component: <ToggleSwitch />, label: "TOGGLE" },
-
-	{ type: "BUFFER", component: <BufferGate />, label: "BUF" },
-	{ type: "NOT", component: <NotGate />, label: "NOT" },
-	{ type: "AND", component: <AndGate />, label: "AND" },
-	{ type: "OR", component: <OrGate />, label: "OR" },
-	{ type: "XOR", component: <XorGate />, label: "XOR" },
-	{ type: "XNOR", component: <XnorGate />, label: "XNOR" },
-	{ type: "NAND", component: <NandGate />, label: "NAND" },
-	{ type: "NOR", component: <NorGate />, label: "NOR" },
-
-	{ type: "LAMP", component: <LampOutput />, label: "LAMP" },
-
-	{ type: "D_FLIPFLOP", component: <DFlipFlop />, label: "D FF" },
-	{ type: "T_FLIPFLOP", component: <TFlipFlop />, label: "T FF" },
-	{ type: "JK_FLIPFLOP", component: <JKFlipFlop />, label: "JK FF" },
-	{ type: "SR_FLIPFLOP", component: <SRFlipFlop />, label: "SR FF" },
-
-	{ type: "NAND_4", component: <NandGate4 />, label: "4-input NAND" },
-	{ type: "NAND_8", component: <NandGate8 />, label: "8-input NAND" },
-	{ type: "NOR_4", component: <NorGate4 />, label: "4-input NOR" },
-	{ type: "NOR_8", component: <NorGate8 />, label: "8-input NOR" },
-
-	{ type: "MUX4", component: <Mux4 />, label: "4-to-1 MUX" },
-	{ type: "DEMUX4", component: <Demux4 />, label: "1-to-4 DEMUX" },
-	{ type: "MUX16", component: <Mux16 />, label: "16-to-1 MUX" },
-	{ type: "DEMUX16", component: <Demux16 />, label: "1-to-16 DEMUX" },
+const categories = [
 	{
-		type: "LABEL",
-		component: (
-			<div style={{ fontFamily: "monospace", fontSize: 24 }}>Label</div>
-		),
-		label: "LABEL",
+		name: "Wejścia",
+		items: [
+			{ type: "CLOCK", label: "CLOCK", component: <ClockInput /> },
+			{ type: "ONE", label: "1", component: <ConstOne /> },
+			{ type: "ZERO", label: "0", component: <ConstZero /> },
+			{ type: "TOGGLE", label: "TOGGLE", component: <ToggleSwitch /> },
+			{
+				type: "LABEL",
+				label: "LABEL",
+				component: (
+					<div
+						style={{
+							fontFamily: "monospace",
+							fontSize: 18,
+							padding: "2px 6px",
+						}}
+					>
+						Label
+					</div>
+				),
+			},
+		],
+	},
+	{
+		name: "Wyjścia",
+		items: [{ type: "LAMP", label: "LAMP", component: <LampOutput /> }],
+	},
+	{
+		name: "Bramki 2-wejściowe",
+		items: [
+			{ type: "AND", label: "AND", component: <AndGate /> },
+			{ type: "OR", label: "OR", component: <OrGate /> },
+			{ type: "NOT", label: "NOT", component: <NotGate /> },
+			{ type: "BUFFER", label: "BUF", component: <BufferGate /> },
+			{ type: "XOR", label: "XOR", component: <XorGate /> },
+			{ type: "XNOR", label: "XNOR", component: <XnorGate /> },
+			{ type: "NAND", label: "NAND", component: <NandGate /> },
+			{ type: "NOR", label: "NOR", component: <NorGate /> },
+		],
+	},
+	{
+		name: "Bramki wielowejściowe",
+		items: [
+			{ type: "NAND_4", label: "NAND-4", component: <NandGate4 /> },
+			{ type: "NAND_8", label: "NAND-8", component: <NandGate8 /> },
+			{ type: "NOR_4", label: "NOR-4", component: <NorGate4 /> },
+			{ type: "NOR_8", label: "NOR-8", component: <NorGate8 /> },
+		],
+	},
+	{
+		name: "Przerzutniki",
+		items: [
+			{ type: "D_FLIPFLOP", label: "D-FF", component: <DFlipFlop /> },
+			{ type: "T_FLIPFLOP", label: "T-FF", component: <TFlipFlop /> },
+			{ type: "JK_FLIPFLOP", label: "JK-FF", component: <JKFlipFlop /> },
+			{ type: "SR_FLIPFLOP", label: "SR-FF", component: <SRFlipFlop /> },
+		],
+	},
+	{
+		name: "MUX / DEMUX",
+		items: [
+			{ type: "MUX4", label: "MUX-4", component: <Mux4 /> },
+			{ type: "DEMUX4", label: "DEMUX-4", component: <Demux4 /> },
+			{ type: "MUX16", label: "MUX-16", component: <Mux16 /> },
+			{ type: "DEMUX16", label: "DEMUX-16", component: <Demux16 /> },
+		],
 	},
 ];
 
-const Toolbar = ({ onAddGate }: { onAddGate: (type: string) => void }) => {
+// --- Dynamicznie skalujący podgląd ---
+const ScaledPreview = ({
+	component,
+	maxWidth,
+	maxHeight,
+}: {
+	component: JSX.Element;
+	maxWidth: number;
+	maxHeight: number;
+}) => {
+	const containerRef = useRef<HTMLDivElement>(null);
+	const contentRef = useRef<HTMLDivElement>(null);
+	const [scale, setScale] = useState(1);
+
+	useEffect(() => {
+		const updateScale = () => {
+			if (!containerRef.current || !contentRef.current) return;
+			const cBox = containerRef.current.getBoundingClientRect();
+			const iBox = contentRef.current.getBoundingClientRect();
+			const s = Math.min(
+				cBox.width / iBox.width,
+				cBox.height / iBox.height
+			);
+			setScale(s * 0.9);
+		};
+		updateScale();
+		window.addEventListener("resize", updateScale);
+		return () => window.removeEventListener("resize", updateScale);
+	}, [component, maxWidth, maxHeight]);
+
 	return (
 		<div
+			ref={containerRef}
 			style={{
-				gap: "12px",
-				flexWrap: "wrap",
-				padding: 8,
+				width: maxWidth,
+				height: maxHeight,
+				display: "flex",
+				alignItems: "center",
+				justifyContent: "center",
+				overflow: "hidden",
 			}}
 		>
-			{gates.map(({ type, component, label }) => (
-				<div
-					key={type}
-					onClick={() => onAddGate(type)}
-					style={{
-						border: "1px solid #aaa",
-						borderRadius: 8,
-						padding: 8,
-						textAlign: "center",
-						cursor: "pointer",
-						width: 110,
-						background: "#f8f8f8",
-						boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-					}}
-				>
-					<div
-						style={{
-							height: 40,
-							display: "flex",
-							justifyContent: "center",
-							alignItems: "center",
-						}}
-					>
-						{component}
-					</div>
-					<div style={{ fontSize: 12, marginTop: 4 }}>{label}</div>
-				</div>
-			))}
+			<div
+				ref={contentRef}
+				style={{
+					transform: `scale(${scale})`,
+					transformOrigin: "center center",
+				}}
+			>
+				{component}
+			</div>
 		</div>
 	);
 };
 
-export default Toolbar;
+// --- Toolbox ---
+const Toolbox = ({ onAddGate }: { onAddGate: (type: string) => void }) => {
+	const [openCategory, setOpenCategory] = useState<string | null>("Wejścia");
+	const [collapsed, setCollapsed] = useState(false);
+
+	const toolboxWidth = 200; // węższy toolbox
+
+	return (
+		<div
+			style={{
+				position: "absolute",
+				top: 0,
+				left: 0,
+				height: "100%",
+				display: "flex",
+				zIndex: 10,
+			}}
+		>
+			{/* Toolbox właściwy */}
+			<div
+				style={{
+					width: toolboxWidth,
+					background: "#fafafa",
+					borderRight: "1px solid #ccc",
+					padding: 8,
+					overflowY: "auto",
+					transition: "transform 0.3s ease",
+					boxShadow: "2px 0 5px rgba(0,0,0,0.1)",
+					transform: collapsed
+						? "translateX(-100%)"
+						: "translateX(0)",
+				}}
+			>
+				{categories.map((cat) => {
+					const open = openCategory === cat.name;
+					return (
+						<div key={cat.name}>
+							<div
+								style={{
+									display: "flex",
+									alignItems: "center",
+									cursor: "pointer",
+									padding: "6px 8px",
+									fontWeight: 600,
+									fontSize: 14,
+									background: "#eee",
+									marginTop: 4,
+									borderRadius: 6,
+								}}
+								onClick={() =>
+									setOpenCategory(open ? null : cat.name)
+								}
+							>
+								{open ? (
+									<ChevronDown size={16} />
+								) : (
+									<ChevronRight size={16} />
+								)}
+								<span style={{ marginLeft: 6 }}>
+									{cat.name}
+								</span>
+							</div>
+
+							{/* płynne rozwijanie */}
+							<div
+								style={{
+									maxHeight: open ? 400 : 0,
+									overflow: "hidden",
+									transition: "max-height 0.3s ease",
+								}}
+							>
+								<div
+									style={{
+										display: "flex",
+										flexWrap: "wrap",
+										gap: 6,
+										padding: 6,
+										justifyContent: "space-around",
+									}}
+								>
+									{cat.items.map(
+										({ type, component, label }) => (
+											<div
+												key={type}
+												onClick={() => onAddGate(type)}
+												style={{
+													border: "1px solid #aaa",
+													borderRadius: 8,
+													width: 70,
+													height: 70,
+													background: "#fff",
+													boxShadow:
+														"0 1px 3px rgba(0,0,0,0.15)",
+													cursor: "pointer",
+													display: "flex",
+													flexDirection: "column",
+													alignItems: "center",
+													justifyContent: "center",
+													transition: "0.2s",
+												}}
+											>
+												<ScaledPreview
+													component={component}
+													maxWidth={60}
+													maxHeight={35}
+												/>
+												<div
+													style={{
+														fontSize: 10,
+														marginTop: 3,
+														textAlign: "center",
+														color: "#333",
+													}}
+												>
+													{label}
+												</div>
+											</div>
+										)
+									)}
+								</div>
+							</div>
+						</div>
+					);
+				})}
+			</div>
+
+			{/* przycisk zwijania wystający */}
+			<div
+				onClick={() => setCollapsed(!collapsed)}
+				style={{
+					position: "absolute",
+					left: collapsed ? toolboxWidth - 200 : toolboxWidth + 16,
+					top: 10,
+					width: 24,
+					height: 40,
+					background: "#ddd",
+					border: "1px solid #aaa",
+					borderLeft: "none",
+					borderRadius: "0 6px 6px 0",
+					display: "flex",
+					alignItems: "center",
+					justifyContent: "center",
+					cursor: "pointer",
+					boxShadow: "2px 2px 4px rgba(0,0,0,0.1)",
+					transition: "left 0.3s ease, background 0.2s",
+					zIndex: 11,
+				}}
+			>
+				{collapsed ? (
+					<ChevronRight size={18} />
+				) : (
+					<ChevronLeft size={18} />
+				)}
+			</div>
+		</div>
+	);
+};
+
+export default Toolbox;
