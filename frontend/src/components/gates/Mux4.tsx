@@ -1,46 +1,95 @@
 import React from "react";
 
-const Mux4: React.FC = () => (
-	<svg width="100" height="100">
-		{/* Prostokąt obudowy */}
-		<rect
-			x="15"
-			y="10"
-			width="70"
-			height="80"
-			fill="white"
-			stroke="#1976d2"
-			strokeWidth="2"
-		/>
+interface GateProps {
+	inputs?: number[];
+	outputs?: number[];
+}
 
-		{/* Wejścia danych z lewej strony */}
-		{[0, 1, 2, 3].map((i) => (
-			<React.Fragment key={`in${i}`}>
+const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
+	const inputColors = inputs.map((v) => (v === 1 ? "green" : "#1976d2"));
+	const outputColors = outputs.map((v) => (v === 1 ? "green" : "#1976d2"));
+
+	return (
+		<svg width="120" height="100">
+			{/* Obudowa */}
+			<rect
+				x="25"
+				y="10"
+				width="70"
+				height="80"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="2"
+			/>
+
+			{/* Linie wejściowe danych */}
+			{[0, 1, 2, 3].map((i) => (
+				<line
+					key={i}
+					x1="0"
+					y1={25 + i * 18}
+					x2="25"
+					y2={25 + i * 18}
+					stroke={inputColors[i] || "#1976d2"}
+					strokeWidth="3"
+				/>
+			))}
+
+			<line
+				x1="50"
+				y1="0"
+				x2="50"
+				y2="10"
+				stroke={inputColors[4] || "#1976d2"}
+				strokeWidth="3"
+			/>
+			<line
+				x1="70"
+				y1="0"
+				x2="70"
+				y2="10"
+				stroke={inputColors[5] || "#1976d2"}
+				strokeWidth="3"
+			/>
+
+			{/* Linie wyjściowe */}
+			<line
+				x1="95"
+				y1="50"
+				x2="120"
+				y2="50"
+				stroke={outputColors[0] || "#1976d2"}
+				strokeWidth="3"
+			/>
+
+			{/* Etykiety wejść */}
+			{[0, 1, 2, 3].map((i) => (
 				<text
-					x="25"
-					y={26 + i * 18}
+					key={`lbl${i}`}
+					x="28"
+					y={28 + i * 18}
 					fontSize="10"
 					fill="#1976d2"
 					fontWeight="bold"
 				>
 					{i}
 				</text>
-			</React.Fragment>
-		))}
+			))}
 
-		{/* Wyjście Y po prawej */}
-		<text x="75" y="53" fontSize="10" fill="#1976d2" fontWeight="bold">
-			Y
-		</text>
+			{/* Etykieta wyjścia */}
+			<text x="85" y="53" fontSize="10" fill="#1976d2" fontWeight="bold">
+				Y
+			</text>
 
-		{/* Wejścia sterujące A0, A1 u góry */}
-		<text x="35" y="8" fontSize="9" fill="#1976d2">
-			A0
-		</text>
-		<text x="55" y="8" fontSize="9" fill="#1976d2">
-			A1
-		</text>
-	</svg>
-);
+			{/* Etykiety sterujące */}
+			<text x="45" y="20" fontSize="9" fill="#1976d2">
+				A0
+			</text>
+			<text x="65" y="20" fontSize="9" fill="#1976d2">
+				A1
+			</text>
+		</svg>
+	);
+};
 
 export default Mux4;

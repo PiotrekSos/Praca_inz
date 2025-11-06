@@ -22,6 +22,16 @@ const ConstZero: React.FC = () => (
 		>
 			0
 		</text>
+
+		{/* nóżka wyjściowa */}
+		<line
+			x1="80"
+			y1="30"
+			x2="100"
+			y2="30"
+			stroke={"#1976d2"}
+			strokeWidth="3"
+		/>
 	</svg>
 );
 

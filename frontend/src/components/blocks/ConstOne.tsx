@@ -22,6 +22,16 @@ const ConstOne: React.FC = () => (
 		>
 			1
 		</text>
+
+		{/* nóżka wyjściowa */}
+		<line
+			x1="80"
+			y1="30"
+			x2="100"
+			y2="30"
+			stroke={"green"}
+			strokeWidth="3"
+		/>
 	</svg>
 );
 

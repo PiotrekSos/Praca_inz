@@ -22,6 +22,16 @@ const LampOutput: React.FC<Props> = ({ isOn = false }) => (
 			stroke="#1976d2"
 			strokeWidth="1.5"
 		/>
+
+		{/* nóżka wejściowa */}
+		<line
+			x1="0"
+			y1="30"
+			x2="30"
+			y2="30"
+			stroke={isOn ? "green" : "#1976d2"}
+			strokeWidth="3"
+		/>
 	</svg>
 );
 

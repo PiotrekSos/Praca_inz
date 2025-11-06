@@ -1,49 +1,93 @@
 import React from "react";
 
-const TFlipFlop: React.FC = () => (
-	<svg width="120" height="80">
-		<rect
-			x="30"
-			y="20"
-			width="60"
-			height="40"
-			rx="6"
-			fill="white"
-			stroke="#1976d2"
-			strokeWidth="2"
-		/>
+interface FlipFlopProps {
+	inputs?: number[];
+	outputs?: number[];
+}
 
-		{/* Etykieta główna */}
-		<text
-			x="60"
-			y="45"
-			textAnchor="middle"
-			fontSize="16"
-			fontWeight="bold"
-			fill="#1976d2"
-		>
-			T
-		</text>
+const TFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
+	const inputColors = inputs.map((v) => (v === 1 ? "green" : "#1976d2"));
+	const outputColors = outputs.map((v) => (v === 1 ? "green" : "#1976d2"));
 
-		{/* Wejście T */}
-		<text x="35" y="38" fontSize="12" fill="#1976d2">
-			T
-		</text>
+	return (
+		<svg width="120" height="80">
+			{/* Linie wejściowe */}
+			<line
+				x1="10"
+				y1="35"
+				x2="30"
+				y2="35"
+				stroke={inputColors[0] || "#1976d2"}
+				strokeWidth="3"
+			/>
+			<line
+				x1="10"
+				y1="50"
+				x2="30"
+				y2="50"
+				stroke={inputColors[1] || "#1976d2"}
+				strokeWidth="3"
+			/>
 
-		{/* CLK */}
-		<text x="35" y="53" fontSize="10" fill="#555">
-			CLK
-		</text>
+			{/* Prostokąt */}
+			<rect
+				x="30"
+				y="20"
+				width="60"
+				height="40"
+				rx="6"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="2"
+			/>
 
-		{/* Wyjścia */}
-		<text x="78" y="38" fontSize="12" fill="#1976d2">
-			Q
-		</text>
+			{/* Etykieta główna */}
+			<text
+				x="60"
+				y="45"
+				textAnchor="middle"
+				fontSize="16"
+				fontWeight="bold"
+				fill="#1976d2"
+			>
+				T
+			</text>
 
-		<text x="73" y="53" fontSize="12" fill="#1976d2">
-			!Q
-		</text>
-	</svg>
-);
+			{/* Etykiety wejść */}
+			<text x="35" y="35" fontSize="12" fill="#1976d2">
+				T
+			</text>
+			<text x="35" y="50" fontSize="10" fill="#555">
+				CLK
+			</text>
+
+			{/* Linie wyjściowe */}
+			<line
+				x1="90"
+				y1="35"
+				x2="110"
+				y2="35"
+				stroke={outputColors[0] || "#1976d2"}
+				strokeWidth="3"
+			/>
+			<line
+				x1="90"
+				y1="50"
+				x2="110"
+				y2="50"
+				stroke={outputColors[1] || "#1976d2"}
+				strokeWidth="3"
+			/>
+
+			{/* Etykiety wyjść */}
+			<text x="78" y="35" fontSize="12" fill="#1976d2">
+				Q
+			</text>
+			<text x="73" y="50" fontSize="12" fill="#1976d2">
+				!Q
+			</text>
+		</svg>
+	);
+};
 
 export default TFlipFlop;

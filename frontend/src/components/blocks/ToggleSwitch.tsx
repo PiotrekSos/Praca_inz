@@ -16,7 +16,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ value, onChange }) => {
 			<rect
 				x="5"
 				y="10"
-				width="90"
+				width="70"
 				height="40"
 				rx="8"
 				ry="8"
@@ -26,7 +26,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ value, onChange }) => {
 			/>
 
 			<rect
-				x="25"
+				x="15"
 				y="20"
 				width="50"
 				height="20"
@@ -36,7 +36,7 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ value, onChange }) => {
 				cursor="pointer"
 			/>
 			<circle
-				cx={value ? 65 : 35}
+				cx={value ? 55 : 25}
 				cy="30"
 				r="8"
 				fill="white"
@@ -44,6 +44,16 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({ value, onChange }) => {
 				strokeWidth="2"
 				onMouseDown={handleClick}
 				cursor="pointer"
+			/>
+
+			{/* nóżka wyjściowa */}
+			<line
+				x1="75"
+				y1="30"
+				x2="100"
+				y2="30"
+				stroke={value ? "green" : "#1976d2"}
+				strokeWidth="3"
 			/>
 		</svg>
 	);

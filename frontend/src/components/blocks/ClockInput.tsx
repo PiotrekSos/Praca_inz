@@ -5,6 +5,7 @@ type Props = {
 const ClockInput: React.FC<Props> = ({ value = 0 }) => {
 	return (
 		<svg width="100" height="60">
+			{/* prostokąt zegara */}
 			<rect
 				x="20"
 				y="10"
@@ -15,11 +16,23 @@ const ClockInput: React.FC<Props> = ({ value = 0 }) => {
 				strokeWidth="2"
 				rx="6"
 			/>
+
+			{/* wykres zegara */}
 			<path
 				d="M30,40 V25 H50 V40 H70 V25"
 				stroke={value ? "green" : "#1976d2"}
 				strokeWidth="3"
 				fill="none"
+			/>
+
+			{/* nóżka wyjściowa */}
+			<line
+				x1="80"
+				y1="30"
+				x2="100"
+				y2="30"
+				stroke={value ? "green" : "#1976d2"}
+				strokeWidth="3"
 			/>
 		</svg>
 	);
