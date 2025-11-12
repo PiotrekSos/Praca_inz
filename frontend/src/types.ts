@@ -5,14 +5,16 @@ export type PinPosition = { x: number; y: number; type: PinType };
 export type Connection = {
 	from: {
 		blockId: number;
-		pin: string;
-		outputIndex?: number;
+		pin: "output";
+		outputIndex: number;
 	};
 	to: {
 		blockId: number;
-		pin: string;
+		pin: "input";
 		inputIndex: number;
 	};
+	// nowe pole:
+	points?: { x: number; y: number }[];
 };
 
 export type BlockType =

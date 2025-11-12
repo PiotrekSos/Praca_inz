@@ -662,7 +662,7 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
           height: 14px;
           border-radius: 50%;
           cursor: crosshair;
-          opacity: 0.3;
+          opacity: 0;
           transition: opacity 0.15s ease;
         }
         .pin.input {

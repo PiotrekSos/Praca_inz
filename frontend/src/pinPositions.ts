@@ -88,7 +88,7 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 		case "XOR":
 		case "XNOR": {
 			return {
-				x: baseX, // pin lekko z lewej
+				x: baseX + 1, // pin lekko z lewej
 				y: baseY + (inputIndex === 0 ? 13 : 33) + 7, // dwa wejścia w środkowej części
 			};
 		}
