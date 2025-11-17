@@ -10,75 +10,114 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 			// 4 wejścia danych (0-3) po lewej stronie
 			if (inputIndex < 4) {
 				return {
-					x: baseX + -6 + 7,
+					x: baseX - 7 + 7,
 					y: baseY + (18 + inputIndex * 18) + 7,
 				};
 			}
 			// 2 wejścia sterujące (4-5) U GÓRY
-			// Patrzę na SVG: tekst A0/A1 ma y="8", więc piny powinny być bardzo wysoko
-			const ctrlIdx = inputIndex - 4;
-			return {
-				x: baseX + (43 + ctrlIdx * 20) + 7,
-				y: baseY + 1, // tuż pod górną krawędzią (y="8" w SVG dla tekstu)
-			};
+			if (inputIndex < 6) {
+				const ctrlIdx = inputIndex - 4;
+				return { x: baseX + (43 + ctrlIdx * 20) + 7, y: baseY - 7 + 7 }; // Było y: 1
+			}
+			// 1 wejście !E (6) U DOŁU
+			if (inputIndex === 6) {
+				return { x: baseX + 53 + 7, y: baseY + 110 - 7 + 6 }; // 100(h) - 7
+			}
+			break;
 		}
 
 		case "MUX16": {
 			// 16 wejść danych (0-15) po lewej
 			if (inputIndex < 16) {
 				return {
-					x: baseX - 4 + 5, // pin ma width: 10
-					y: baseY + (20.5 + inputIndex * 18.5) + 5,
+					x: baseX - 7 + 7,
+					y: baseY + (17 + inputIndex * 18.5) + 7,
 				};
 			}
-			// 4 wejścia sterujące (16-19) od dołu
-			const ctrlIdx = inputIndex - 16;
-			return {
-				x: baseX + (34 + ctrlIdx * 15) + 6, // pin ma width: 12
-				y: baseY + 2, // bottom: 60
-			};
+			// 4 wejścia sterujące (16-19) od góry
+			if (inputIndex < 20) {
+				const ctrlIdx = inputIndex - 16;
+				return { x: baseX + (33 + ctrlIdx * 15) + 6, y: baseY - 7 + 7 };
+			}
+			// 1 wejście !E (20) U DOŁU
+			if (inputIndex === 20) {
+				return { x: baseX + 53 + 7, y: baseY + 340 - 7 + 7 }; // 330(h) - 7
+			}
+			break;
 		}
 
 		case "DEMUX4": {
 			// Pojedyncze wejście danych (0)
 			if (inputIndex === 0) {
-				return {
-					x: baseX + 2,
-					y: baseY + 51,
-				};
+				return { x: baseX - 7 + 7, y: baseY + 43 + 7 };
 			}
-			// 2 wejścia sterujące (1-2) od dołu
-			const ctrlIdx = inputIndex - 1;
-			return {
-				x: baseX + (51 + ctrlIdx * 20),
-				y: baseY + 1, // bottom: 58
-			};
+			// 2 wejścia sterujące (1-2) od góry
+			if (inputIndex < 3) {
+				const ctrlIdx = inputIndex - 1;
+				return { x: baseX + (43 + ctrlIdx * 20) + 7, y: baseY - 7 + 7 };
+			}
+			// 1 wejście !E (3) U DOŁU
+			if (inputIndex === 3) {
+				return { x: baseX + 53 + 7, y: baseY + 110 - 7 + 7 }; // 100(h) - 7
+			}
+			break;
 		}
 
 		case "DEMUX16": {
 			// Pojedyncze wejście danych (0)
 			if (inputIndex === 0) {
-				return {
-					x: baseX + 1,
-					y: baseY + 165,
-				};
+				return { x: baseX - 7 + 7, y: baseY + 158 + 7 };
 			}
-			// 4 wejścia sterujące (1-4) od dołu
-			const ctrlIdx = inputIndex - 1;
-			return {
-				x: baseX + (40 + ctrlIdx * 15),
-				y: baseY + 1, // bottom: 60
-			};
+			// 4 wejścia sterujące (1-4) od góry
+			if (inputIndex < 5) {
+				const ctrlIdx = inputIndex - 1;
+				return { x: baseX + (33 + ctrlIdx * 15) + 6, y: baseY - 7 + 7 };
+			}
+			// 1 wejście !E (5) U DOŁU
+			if (inputIndex === 5) {
+				return { x: baseX + 53 + 7, y: baseY + 340 - 7 + 7 }; // 330(h) - 7
+			}
+			break;
 		}
 
 		case "D_FLIPFLOP":
-		case "T_FLIPFLOP":
+		case "T_FLIPFLOP": {
+			// inputIndex 0: D/T, 1: CLK
+			if (inputIndex < 2) {
+				return {
+					x: baseX + 4 + 7,
+					y: baseY + (28 + inputIndex * 15) + 7,
+				};
+			}
+			// inputIndex 2: S (góra)
+			if (inputIndex === 2) {
+				return { x: baseX + 54 + 7, y: baseY - 2 + 7 };
+			}
+			// inputIndex 3: R (dół)
+			if (inputIndex === 3) {
+				return { x: baseX + 54 + 7, y: baseY + 68 + 7 }; // 60 = height bloku
+			}
+			break; // Powrót do default jeśli coś pójdzie nie tak
+		}
+
 		case "JK_FLIPFLOP":
 		case "SR_FLIPFLOP": {
-			return {
-				x: baseX + 4 + 7,
-				y: baseY + (28 + inputIndex * 15) + 7,
-			};
+			// inputIndex 0: J/S, 1: K/R, 2: CLK
+			if (inputIndex < 3) {
+				return {
+					x: baseX + 4 + 7,
+					y: baseY + (28 + inputIndex * 15) + 7,
+				};
+			}
+			// inputIndex 3: S (góra)
+			if (inputIndex === 3) {
+				return { x: baseX + 56 + 7, y: baseY - 7 + 7 };
+			}
+			// inputIndex 4: R (dół)
+			if (inputIndex === 4) {
+				return { x: baseX + 56 + 7, y: baseY + 60 + 7 }; // 60 = height bloku
+			}
+			break;
 		}
 
 		case "AND":

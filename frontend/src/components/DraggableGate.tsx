@@ -223,10 +223,14 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 			{(() => {
 				switch (block.type) {
 					case "MUX4": {
+						// 4 dane (0-3), 2 selektory (4-5), 1 !E (6)
 						const dataInputs = block.inputs.slice(0, 4);
 						const controlInputs = block.inputs.slice(4, 6);
+						// const enableInput = block.inputs[6];
+
 						return (
 							<>
+								{/* wejścia danych po lewej */}
 								{dataInputs.map((_, idx) => (
 									<div
 										key={`mux4-data-${idx}`}
@@ -238,14 +242,12 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										}}
 									/>
 								))}
+								{/* wejścia sterujące od góry */}
 								{controlInputs.map((_, idx) => (
 									<div
 										key={`mux4-ctrl-${idx}`}
 										className="pin input"
-										style={{
-											left: 43 + idx * 20,
-											bottom: 53,
-										}}
+										style={{ left: 43 + idx * 20, top: -7 }}
 										onMouseDown={(e) => {
 											e.stopPropagation();
 											onPinClick(
@@ -256,12 +258,23 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										}}
 									/>
 								))}
+								{/* !E na dole */}
+								<div
+									key="mux4-en"
+									className="pin input"
+									style={{ left: 53, top: 103 }} // 100(h) - 7
+									onMouseDown={(e) => {
+										e.stopPropagation();
+										onPinClick(block.id, "input", 6);
+									}}
+								/>
+								{/* wyjście */}
 								<div
 									className="pin output"
 									style={{ right: -26, top: 43 }}
 									onMouseDown={(e) => {
 										e.stopPropagation();
-										onPinClick(block.id, "output");
+										onPinClick(block.id, "output", 0);
 									}}
 								/>
 							</>
@@ -271,8 +284,11 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 					case "MUX16": {
 						const dataInputs = block.inputs.slice(0, 16);
 						const controlInputs = block.inputs.slice(16, 20);
+						// const enableInput = block.inputs[20];
+
 						return (
 							<>
+								{/* 16 wejść danych po lewej */}
 								{dataInputs.map((_, idx) => (
 									<div
 										key={`mux16-data-${idx}`}
@@ -287,14 +303,12 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										}}
 									/>
 								))}
+								{/* 4 wejścia sterujące na górze */}
 								{controlInputs.map((_, idx) => (
 									<div
 										key={`mux16-ctrl-${idx}`}
 										className="pin input"
-										style={{
-											left: 33 + idx * 15,
-											bottom: 313,
-										}}
+										style={{ left: 33 + idx * 15, top: -7 }}
 										onMouseDown={(e) => {
 											e.stopPropagation();
 											onPinClick(
@@ -305,12 +319,23 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										}}
 									/>
 								))}
+								{/* !E na dole */}
+								<div
+									key="mux16-en"
+									className="pin input"
+									style={{ left: 53, top: 333 }} // 330(h) - 7
+									onMouseDown={(e) => {
+										e.stopPropagation();
+										onPinClick(block.id, "input", 20);
+									}}
+								/>
+								{/* pojedyncze wyjście */}
 								<div
 									className="pin output"
 									style={{ right: -26, top: 158 }}
 									onMouseDown={(e) => {
 										e.stopPropagation();
-										onPinClick(block.id, "output");
+										onPinClick(block.id, "output", 0);
 									}}
 								/>
 							</>
@@ -320,6 +345,8 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 					case "DEMUX4": {
 						const outputs = block.outputs;
 						const controlInputs = block.inputs.slice(1, 3);
+						// const enableInput = block.inputs[3];
+
 						return (
 							<>
 								<div
@@ -330,14 +357,12 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										onPinClick(block.id, "input", 0);
 									}}
 								/>
+								{/* wejścia sterujące od góry */}
 								{controlInputs.map((_, idx) => (
 									<div
 										key={`demux4-ctrl-${idx}`}
 										className="pin input"
-										style={{
-											left: 43 + idx * 20,
-											bottom: 53,
-										}}
+										style={{ left: 43 + idx * 20, top: -7 }}
 										onMouseDown={(e) => {
 											e.stopPropagation();
 											onPinClick(
@@ -348,6 +373,16 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										}}
 									/>
 								))}
+								{/* !E na dole */}
+								<div
+									key="demux4-en"
+									className="pin input"
+									style={{ left: 53, top: 103 }} // 100(h) - 7
+									onMouseDown={(e) => {
+										e.stopPropagation();
+										onPinClick(block.id, "input", 3);
+									}}
+								/>
 								{outputs.map((_, idx) => (
 									<div
 										key={`demux4-out-${idx}`}
@@ -369,6 +404,8 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 					case "DEMUX16": {
 						const outputs = block.outputs;
 						const controlInputs = block.inputs.slice(1, 5);
+						// const enableInput = block.inputs[5];
+
 						return (
 							<>
 								<div
@@ -379,14 +416,12 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										onPinClick(block.id, "input", 0);
 									}}
 								/>
+								{/* sterujące na górze */}
 								{controlInputs.map((_, idx) => (
 									<div
 										key={`demux16-ctrl-${idx}`}
 										className="pin input"
-										style={{
-											left: 33 + idx * 15,
-											bottom: 313,
-										}}
+										style={{ left: 33 + idx * 15, top: -7 }}
 										onMouseDown={(e) => {
 											e.stopPropagation();
 											onPinClick(
@@ -397,6 +432,16 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										}}
 									/>
 								))}
+								{/* !E na dole */}
+								<div
+									key="demux16-en"
+									className="pin input"
+									style={{ left: 53, top: 333 }} // 330(h) - 7
+									onMouseDown={(e) => {
+										e.stopPropagation();
+										onPinClick(block.id, "input", 5);
+									}}
+								/>
 								{outputs.map((_, idx) => (
 									<div
 										key={`demux16-out-${idx}`}
@@ -499,9 +544,21 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 					case "T_FLIPFLOP":
 					case "JK_FLIPFLOP":
 					case "SR_FLIPFLOP": {
+						// Definicja pinów synchronicznych (D, T, J, K, CLK)
+						const syncInputs =
+							block.type === "D_FLIPFLOP" ||
+							block.type === "T_FLIPFLOP"
+								? block.inputs.slice(0, 2) // D, CLK lub T, CLK
+								: block.inputs.slice(0, 3); // J, K, CLK lub S, R, CLK
+
+						// Definicja pinów asynchronicznych (S, R)
+						const asyncStartIndex = syncInputs.length;
+						const asyncInputs = block.inputs.slice(asyncStartIndex); // S, R
+
 						return (
 							<>
-								{block.inputs?.map((_, idx) => (
+								{/* --- Wejścia synchroniczne (po lewej) --- */}
+								{syncInputs.map((_, idx) => (
 									<div
 										key={`ff-in-${idx}`}
 										className="pin input"
@@ -515,6 +572,46 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										}}
 									/>
 								))}
+
+								{/* --- Wejścia asynchroniczne (S na górze, R na dole) --- */}
+								{asyncInputs.length > 0 && (
+									<div // S (Set)
+										key={`ff-in-s`}
+										className="pin input"
+										style={{ left: 53, top: -2 }} // Na środku, na górze
+										onMouseDown={(e) => {
+											e.stopPropagation();
+											onPinClick(
+												block.id,
+												"input",
+												asyncStartIndex
+											);
+										}}
+									/>
+								)}
+								{asyncInputs.length > 1 && (
+									<div // R (Reset)
+										key={`ff-in-r`}
+										className="pin input"
+										style={{
+											left: 53,
+											bottom:
+												block.type === "JK_FLIPFLOP"
+													? -40
+													: -20,
+										}} // Na środku, na dole
+										onMouseDown={(e) => {
+											e.stopPropagation();
+											onPinClick(
+												block.id,
+												"input",
+												asyncStartIndex + 1
+											);
+										}}
+									/>
+								)}
+
+								{/* --- Wyjścia (Q i !Q) --- */}
 								<div
 									className="pin output"
 									style={{ right: -16, top: 28 }}

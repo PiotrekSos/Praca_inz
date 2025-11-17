@@ -29,6 +29,23 @@ const TFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				strokeWidth="3"
 			/>
 
+			<line
+				x1="60"
+				y1="5"
+				x2="60"
+				y2="20"
+				stroke={inputColors[2] || "#1976d2"} // S
+				strokeWidth="3"
+			/>
+			<line
+				x1="60"
+				y1="75"
+				x2="60"
+				y2="60"
+				stroke={inputColors[3] || "#1976d2"} // R
+				strokeWidth="3"
+			/>
+
 			{/* Prostokąt */}
 			<rect
 				x="30"
@@ -41,17 +58,22 @@ const TFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				strokeWidth="2"
 			/>
 
-			{/* Etykieta główna */}
-			<text
-				x="60"
-				y="45"
-				textAnchor="middle"
-				fontSize="16"
-				fontWeight="bold"
-				fill="#1976d2"
-			>
-				T
-			</text>
+			<circle
+				cx="60"
+				cy="15"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="1.5"
+			/>
+			<circle
+				cx="60"
+				cy="65"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="1.5"
+			/>
 
 			{/* Etykiety wejść */}
 			<text x="35" y="35" fontSize="12" fill="#1976d2">
@@ -86,6 +108,22 @@ const TFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 			<text x="73" y="50" fontSize="12" fill="#1976d2">
 				!Q
 			</text>
+
+			<text x="58" y="30" fontSize="10" fill="#1976d2">
+				!S
+			</text>
+			<text x="58" y="55" fontSize="10" fill="#1976d2">
+				!R
+			</text>
+
+			<circle
+				cx="95"
+				cy="50"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="1.5"
+			/>
 		</svg>
 	);
 };

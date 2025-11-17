@@ -10,7 +10,7 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 	const outputColors = outputs.map((v) => (v === 1 ? "green" : "#1976d2"));
 
 	return (
-		<svg width="120" height="100">
+		<svg width="120" height="110">
 			<rect
 				x="25"
 				y="10"
@@ -52,6 +52,24 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				strokeWidth="3"
 			/>
 
+			{/* Linia Enable (3) - DÓŁ */}
+			<line
+				x1="60"
+				y1="110"
+				x2="60"
+				y2="90"
+				stroke={inputColors[3] || "#1976d2"}
+				strokeWidth="3"
+			/>
+			<circle
+				cx="60"
+				cy="95"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="2"
+			/>
+
 			{/* Wyjścia */}
 			{[0, 1, 2, 3].map((i) => (
 				<line
@@ -74,8 +92,19 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 					fill="#1976d2"
 					fontWeight="bold"
 				>
-					{i}
+					!{i}
 				</text>
+			))}
+
+			{[0, 1, 2, 3].map((i) => (
+				<circle
+					cx="100"
+					cy={25 + i * 18}
+					r="5"
+					fill="white"
+					stroke="#1976d2"
+					strokeWidth="2"
+				/>
 			))}
 
 			{/* Wejścia adresowe */}
@@ -84,6 +113,9 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 			</text>
 			<text x="65" y="20" fontSize="9" fill="#1976d2">
 				A1
+			</text>
+			<text x="55" y="88" fontSize="9" fill="#1976d2">
+				!E
 			</text>
 		</svg>
 	);

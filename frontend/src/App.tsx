@@ -86,49 +86,80 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					break;
 
 				case "D_FLIPFLOP": {
-					const [D, CLK] = b.inputs; // Stan jest już zainicjowany
-					if (CLK === 1) b.state = D;
+					// Wejścia: [D(0), CLK(1), !S_async(2), !R_async(3)]
+					const [D, CLK, S_low, R_low] = b.inputs;
+					if (!("state" in b)) b.state = 0;
+
+					// Logika asynchroniczna (aktywna stanem 0) ma priorytet
+					// Reset (!R = 0) ma wyższy priorytet niż Set (!S = 0)
+					if (R_low === 0) {
+						b.state = 0; // Asynchroniczny Reset
+					} else if (S_low === 0) {
+						b.state = 1; // Asynchroniczny Set
+					} else if (CLK === 1) {
+						// Logika synchroniczna (tylko gdy S i R są nieaktywne '1')
+						b.state = D;
+					}
+					// Jeśli CLK=0, S=1, R=1 -> stan jest podtrzymany
+
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
 					break;
 				}
 				case "T_FLIPFLOP": {
-					const [T, CLK] = b.inputs;
-					if (CLK === 1 && T === 1) b.state = b.state ? 0 : 1;
+					// Wejścia: [T(0), CLK(1), !S_async(2), !R_async(3)]
+					const [T, CLK, S_low, R_low] = b.inputs;
+					if (!("state" in b)) b.state = 0;
+
+					if (R_low === 0) {
+						b.state = 0;
+					} else if (S_low === 0) {
+						b.state = 1;
+					} else if (CLK === 1 && T === 1) {
+						// Synchroniczny toggle
+						b.state = b.state ? 0 : 1;
+					}
+
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
 					break;
 				}
 				case "JK_FLIPFLOP": {
-					const [J, K, CLK] = b.inputs;
-					if (CLK === 1) {
-						if (J === 0 && K === 0) {
-							// No change
-						} else if (J === 0 && K === 1) b.state = 0;
+					// Wejścia: [J(0), K(1), CLK(2), !S_async(3), !R_async(4)]
+					const [J, K, CLK, S_low, R_low] = b.inputs;
+					if (!("state" in b)) b.state = 0;
+
+					if (R_low === 0) {
+						b.state = 0;
+					} else if (S_low === 0) {
+						b.state = 1;
+					} else if (CLK === 1) {
+						// Logika synchroniczna
+						if (J === 0 && K === 1) b.state = 0;
 						else if (J === 1 && K === 0) b.state = 1;
 						else if (J === 1 && K === 1) b.state = b.state ? 0 : 1;
+						// J=0, K=0 -> stan podtrzymany
 					}
+
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
 					break;
 				}
 				case "SR_FLIPFLOP": {
 					const [S, R, CLK] = b.inputs;
-					if (CLK === 1) {
-						if (S === 1 && R === 0) b.state = 1;
-						else if (S === 0 && R === 1) b.state = 0;
-					}
+					if (S === 1 && R === 0) b.state = 1;
+					else if (S === 0 && R === 1) b.state = 0;
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
 					break;
 				}
 
 				case "RAM_16x4": {
-					// Piny: 4x D (0-3), 4x A (4-7), CS (8), WE (9)
+					// Piny: 4x D (0-3), 4x A (4-7), !CS (8), !WE (9)
 					const dataIn = b.inputs.slice(0, 4);
 					const addressIn = b.inputs.slice(4, 8);
-					const CS = b.inputs[8] ?? 0;
-					const WE = b.inputs[9] ?? 0;
+					const CS_low = b.inputs[8] ?? 1; // Domyślnie 1 (nieaktywny)
+					const WE_low = b.inputs[9] ?? 1; // Domyślnie 1 (nieaktywny)
 
 					if (!b.memory) {
 						b.memory = new Uint8Array(16); // 16 komórek
@@ -141,8 +172,8 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					if (addressIn[2] === 1) address |= 4; // A2
 					if (addressIn[3] === 1) address |= 8; // A3
 
-					// Logika ZAPISU (Asynchroniczny, sterowany poziomem WE)
-					if (CS === 1 && WE === 1) {
+					// Logika ZAPISU (Aktywny CS=0 i WE=0)
+					if (CS_low === 0 && WE_low === 0) {
 						// Zapis włączony
 						let dataNibble = 0; // 4-bitowa dana (nibble)
 						if (dataIn[0] === 1) dataNibble |= 1; // D0
@@ -152,20 +183,22 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 
 						b.memory[address] = dataNibble;
 
-						// Podczas zapisu wyjścia są nieaktywne (stan Z)
-						b.outputs.fill(0);
+						// Podczas zapisu wyjścia są w stanie wysokiej impedancji (Hi-Z).
+						// Dla wyjść zanegowanych, Hi-Z = 1 (pull-up).
+						b.outputs.fill(1);
 					}
-					// Logika ODCZYTU (Asynchroniczny)
-					else if (CS === 1 && WE === 0) {
+					// Logika ODCZYTU (Aktywny CS=0 i WE=1)
+					else if (CS_low === 0 && WE_low === 1) {
 						// Odczyt włączony
 						const dataNibble = b.memory[address];
-						b.outputs[0] = (dataNibble >> 0) & 1; // Q0
-						b.outputs[1] = (dataNibble >> 1) & 1; // Q1
-						b.outputs[2] = (dataNibble >> 2) & 1; // Q2
-						b.outputs[3] = (dataNibble >> 3) & 1; // Q3
+						// Wyjścia są ZANEGOWANE
+						b.outputs[0] = (dataNibble >> 0) & 1 ? 0 : 1; // !Q0
+						b.outputs[1] = (dataNibble >> 1) & 1 ? 0 : 1; // !Q1
+						b.outputs[2] = (dataNibble >> 2) & 1 ? 0 : 1; // !Q2
+						b.outputs[3] = (dataNibble >> 3) & 1 ? 0 : 1; // !Q3
 					} else {
-						// CS = 0 (Chip nieaktywny)
-						b.outputs.fill(0);
+						// CS = 1 (Chip nieaktywny) -> Wyjścia w stanie Hi-Z (zanegowane = 1)
+						b.outputs.fill(1);
 					}
 					break;
 				}
@@ -180,41 +213,73 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					break;
 
 				case "MUX4": {
+					// inputs: I0-I3 (0-3), A0-A1 (4-5), !E (6)
 					const dataInputs = b.inputs.slice(0, 4);
 					const selectBits = b.inputs.slice(4, 6);
-					const sel = (selectBits[0] << 1) | selectBits[1];
-					b.outputs[0] = dataInputs[sel] ?? 0;
+					const E_low = b.inputs[6] ?? 1; // Domyślnie 1 (nieaktywny)
+
+					if (E_low === 0) {
+						// Aktywny stanem niskim
+						const sel = (selectBits[0] << 1) | selectBits[1];
+						const selectedValue = dataInputs[sel] ?? 0;
+						b.outputs[0] = selectedValue === 1 ? 0 : 1; // Wyjście zanegowane
+					} else {
+						b.outputs[0] = 1; // Stan Hi-Z (zanegowane wyjście = 1)
+					}
 					break;
 				}
 				case "MUX16": {
+					// inputs: I0–I15 (0-15), A0–A3 (16-19), !E (20)
 					const dataInputs = b.inputs.slice(0, 16);
 					const selectBits = b.inputs.slice(16, 20);
-					const sel =
-						(selectBits[0] << 3) |
-						(selectBits[1] << 2) |
-						(selectBits[2] << 1) |
-						selectBits[3];
-					b.outputs[0] = dataInputs[sel] ?? 0;
+					const E_low = b.inputs[20] ?? 1;
+
+					if (E_low === 0) {
+						const sel =
+							(selectBits[0] << 3) |
+							(selectBits[1] << 2) |
+							(selectBits[2] << 1) |
+							selectBits[3];
+						const selectedValue = dataInputs[sel] ?? 0;
+						b.outputs[0] = selectedValue === 1 ? 0 : 1; // Wyjście zanegowane
+					} else {
+						b.outputs[0] = 1; // Stan Hi-Z (zanegowane wyjście = 1)
+					}
 					break;
 				}
 				case "DEMUX4": {
+					// inputs: IN (0), A0-A1 (1-2), !E (3)
 					const IN = b.inputs[0];
 					const selectBits = b.inputs.slice(1, 3);
-					const sel = (selectBits[0] << 1) | selectBits[1];
-					b.outputs = [0, 0, 0, 0];
-					if (IN === 1) b.outputs[sel] = 1;
+					const E_low = b.inputs[3] ?? 1;
+
+					b.outputs = [1, 1, 1, 1]; // Domyślnie wszystkie wyjścia zanegowane są Hi-Z (1)
+
+					if (E_low === 0) {
+						// Aktywny
+						const sel = (selectBits[0] << 1) | selectBits[1];
+						// Ustawiamy wybrane wyjście na !IN
+						b.outputs[sel] = IN === 1 ? 0 : 1;
+					}
 					break;
 				}
 				case "DEMUX16": {
+					// inputs: IN (0), A0–A3 (1-4), !E (5)
 					const IN = b.inputs[0];
 					const selectBits = b.inputs.slice(1, 5);
-					const sel =
-						(selectBits[0] << 3) |
-						(selectBits[1] << 2) |
-						(selectBits[2] << 1) |
-						selectBits[3];
-					b.outputs = new Array(16).fill(0);
-					if (IN === 1) b.outputs[sel] = 1;
+					const E_low = b.inputs[5] ?? 1;
+
+					b.outputs = new Array(16).fill(1); // Domyślnie Hi-Z (1)
+
+					if (E_low === 0) {
+						const sel =
+							(selectBits[0] << 3) |
+							(selectBits[1] << 2) |
+							(selectBits[2] << 1) |
+							selectBits[3];
+						// Ustawiamy wybrane wyjście na !IN
+						b.outputs[sel] = IN === 1 ? 0 : 1;
+					}
 					break;
 				}
 				case "TOGGLE":
@@ -576,18 +641,26 @@ function App() {
 			? 1
 			: ["CLOCK", "ONE", "ZERO", "TOGGLE"].includes(type)
 			? 0
-			: ["JK_FLIPFLOP", "SR_FLIPFLOP", "DEMUX4"].includes(type)
+			: ["SR_FLIPFLOP"].includes(type)
 			? 3
-			: ["NAND_4", "NOR_4"].includes(type)
+			: [
+					"NAND_4",
+					"NOR_4",
+					"D_FLIPFLOP",
+					"T_FLIPFLOP",
+					"DEMUX4",
+			  ].includes(type)
 			? 4
-			: ["DEMUX16"].includes(type)
+			: ["JK_FLIPFLOP"].includes(type)
 			? 5
-			: ["MUX4"].includes(type)
+			: ["DEMUX16"].includes(type)
 			? 6
+			: ["MUX4"].includes(type)
+			? 7
 			: ["NAND_8", "NOR_8"].includes(type)
 			? 8
 			: ["MUX16"].includes(type)
-			? 20
+			? 21
 			: ["LABEL"].includes(type)
 			? 0
 			: ["RAM_16x4"].includes(type)

@@ -49,18 +49,6 @@ const SRFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				rx="6"
 			/>
 
-			{/* Etykieta główna */}
-			<text
-				x="60"
-				y="55"
-				fontSize="16"
-				fontWeight="bold"
-				fill="#1976d2"
-				textAnchor="middle"
-			>
-				SR
-			</text>
-
 			{/* Etykiety wejść */}
 			<text x="35" y="35" fontSize="12" fill="#1976d2">
 				S
@@ -97,6 +85,15 @@ const SRFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 			<text x="73" y="65" fontSize="12" fill="#1976d2">
 				!Q
 			</text>
+
+			<circle
+				cx="95"
+				cy="65"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="1.5"
+			/>
 		</svg>
 	);
 };

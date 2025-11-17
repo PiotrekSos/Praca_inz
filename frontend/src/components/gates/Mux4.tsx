@@ -10,7 +10,7 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 	const outputColors = outputs.map((v) => (v === 1 ? "green" : "#1976d2"));
 
 	return (
-		<svg width="120" height="100">
+		<svg width="120" height="110">
 			{/* Obudowa */}
 			<rect
 				x="25"
@@ -53,6 +53,24 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				strokeWidth="3"
 			/>
 
+			{/* Linia Enable (6) - DÓŁ */}
+			<line
+				x1="60"
+				y1="110" // Od dołu
+				x2="60"
+				y2="90" // Do obudowy
+				stroke={inputColors[6] || "#1976d2"}
+				strokeWidth="3"
+			/>
+			<circle
+				cx="60"
+				cy="95"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="2"
+			/>
+
 			{/* Linie wyjściowe */}
 			<line
 				x1="95"
@@ -61,6 +79,15 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				y2="50"
 				stroke={outputColors[0] || "#1976d2"}
 				strokeWidth="3"
+			/>
+
+			<circle
+				cx="100"
+				cy="50"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="2"
 			/>
 
 			{/* Etykiety wejść */}
@@ -78,8 +105,8 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 			))}
 
 			{/* Etykieta wyjścia */}
-			<text x="85" y="53" fontSize="10" fill="#1976d2" fontWeight="bold">
-				Y
+			<text x="80" y="53" fontSize="10" fill="#1976d2" fontWeight="bold">
+				!Y
 			</text>
 
 			{/* Etykiety sterujące */}
@@ -88,6 +115,9 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 			</text>
 			<text x="65" y="20" fontSize="9" fill="#1976d2">
 				A1
+			</text>
+			<text x="55" y="88" fontSize="9" fill="#1976d2">
+				!E
 			</text>
 		</svg>
 	);

@@ -10,7 +10,7 @@ const Mux16: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 	const outputColors = outputs.map((v) => (v === 1 ? "green" : "#1976d2"));
 
 	return (
-		<svg width="120" height="330">
+		<svg width="120" height="340">
 			<rect
 				x="25"
 				y="10"
@@ -68,6 +68,24 @@ const Mux16: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				strokeWidth="3"
 			/>
 
+			{/* Linia Enable (20) - DÓŁ */}
+			<line
+				x1="60"
+				y1="340"
+				x2="60"
+				y2="320"
+				stroke={inputColors[20] || "#1976d2"}
+				strokeWidth="3"
+			/>
+			<circle
+				cx="60"
+				cy="325"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="2"
+			/>
+
 			{/* Linie wyjściowe */}
 			<line
 				x1="95"
@@ -76,6 +94,15 @@ const Mux16: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				y2="165"
 				stroke={outputColors[0] || "#1976d2"}
 				strokeWidth="3"
+			/>
+
+			<circle
+				cx="100"
+				cy="165"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="2"
 			/>
 
 			{/* Etykiety wejść */}
@@ -93,8 +120,8 @@ const Mux16: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 			))}
 
 			{/* Wyjście */}
-			<text x="85" y="168" fontSize="10" fill="#1976d2" fontWeight="bold">
-				Y
+			<text x="80" y="168" fontSize="10" fill="#1976d2" fontWeight="bold">
+				!Y
 			</text>
 
 			{/* Adresowe wejścia */}
@@ -109,6 +136,9 @@ const Mux16: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 					{a}
 				</text>
 			))}
+			<text x="55" y="315" fontSize="10" fill="#1976d2">
+				!E
+			</text>
 		</svg>
 	);
 };

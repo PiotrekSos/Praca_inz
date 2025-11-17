@@ -49,18 +49,6 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				rx="6"
 			/>
 
-			{/* Etykieta główna */}
-			<text
-				x="60"
-				y="55"
-				fontSize="16"
-				fontWeight="bold"
-				fill="#1976d2"
-				textAnchor="middle"
-			>
-				JK
-			</text>
-
 			{/* Etykiety wejść */}
 			<text x="35" y="35" fontSize="12" fill="#1976d2">
 				J
@@ -90,6 +78,40 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				strokeWidth="3"
 			/>
 
+			<line
+				x1="60"
+				y1="5"
+				x2="60"
+				y2="20"
+				stroke={inputColors[3] || "#1976d2"} // S
+				strokeWidth="3"
+			/>
+			<line
+				x1="60"
+				y1="95"
+				x2="60"
+				y2="80"
+				stroke={inputColors[4] || "#1976d2"} // R
+				strokeWidth="3"
+			/>
+
+			<circle
+				cx="60"
+				cy="15"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="1.5"
+			/>
+			<circle
+				cx="60"
+				cy="85"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="1.5"
+			/>
+
 			{/* Etykiety wyjść */}
 			<text x="78" y="35" fontSize="12" fill="#1976d2">
 				Q
@@ -97,6 +119,21 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 			<text x="73" y="65" fontSize="12" fill="#1976d2">
 				!Q
 			</text>
+			<text x="58" y="30" fontSize="10" fill="#1976d2">
+				!S
+			</text>
+			<text x="58" y="75" fontSize="10" fill="#1976d2">
+				!R
+			</text>
+
+			<circle
+				cx="95"
+				cy="65"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="1.5"
+			/>
 		</svg>
 	);
 };

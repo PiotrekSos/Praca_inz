@@ -10,7 +10,7 @@ const Demux16: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 	const outputColors = outputs.map((v) => (v === 1 ? "green" : "#1976d2"));
 
 	return (
-		<svg width="120" height="330">
+		<svg width="120" height="340">
 			<rect
 				x="25"
 				y="10"
@@ -68,6 +68,24 @@ const Demux16: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				strokeWidth="3"
 			/>
 
+			{/* Linia Enable (5) - DÓŁ */}
+			<line
+				x1="60"
+				y1="340"
+				x2="60"
+				y2="320"
+				stroke={inputColors[5] || "#1976d2"}
+				strokeWidth="3"
+			/>
+			<circle
+				cx="60"
+				cy="325"
+				r="5"
+				fill="white"
+				stroke="#1976d2"
+				strokeWidth="2"
+			/>
+
 			{/* Wyjścia */}
 			{[...Array(16)].map((_, i) => (
 				<line
@@ -84,14 +102,25 @@ const Demux16: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 			{[...Array(16)].map((_, i) => (
 				<text
 					key={`lbl${i}`}
-					x="85"
+					x="80"
 					y={28 + i * 18.5}
 					fontSize="8"
 					fill="#1976d2"
 					fontWeight="bold"
 				>
-					{i}
+					!{i}
 				</text>
+			))}
+
+			{[...Array(16)].map((_, i) => (
+				<circle
+					cx="100"
+					cy={25 + i * 18.5}
+					r="5"
+					fill="white"
+					stroke="#1976d2"
+					strokeWidth="2"
+				/>
 			))}
 
 			{/* Adresowe wejścia */}
@@ -106,6 +135,9 @@ const Demux16: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 					{a}
 				</text>
 			))}
+			<text x="55" y="315" fontSize="10" fill="#1976d2">
+				!E
+			</text>
 		</svg>
 	);
 };
