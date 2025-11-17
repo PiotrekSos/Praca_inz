@@ -19,6 +19,7 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				fill="white"
 				stroke="#1976d2"
 				strokeWidth="2"
+				rx="6"
 			/>
 
 			{/* Wejście D */}

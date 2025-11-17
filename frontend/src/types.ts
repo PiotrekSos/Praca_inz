@@ -43,7 +43,8 @@ export type BlockType =
 	| "DEMUX4"
 	| "MUX16"
 	| "DEMUX16"
-	| "LABEL";
+	| "LABEL"
+	| "RAM_16x4";
 
 export type Block = {
 	id: number;
@@ -55,4 +56,5 @@ export type Block = {
 	state?: number;
 	prevClock?: number;
 	text?: string;
+	memory?: Uint8Array;
 };

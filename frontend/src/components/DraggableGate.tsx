@@ -28,6 +28,7 @@ import Demux16 from "./gates/Demux16.tsx";
 import Mux4 from "./gates/Mux4.tsx";
 import Demux4 from "./gates/Demux4.tsx";
 import LabelBlock from "./blocks/LabelBlock";
+import Ram16x4 from "./blocks/Ram16x4.tsx";
 
 type Props = {
 	block: Block;
@@ -156,13 +157,19 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 					<NorGate8 inputs={block.inputs} outputs={block.outputs} />
 				);
 			case "MUX16":
-				return <Mux16 />;
+				return <Mux16 inputs={block.inputs} outputs={block.outputs} />;
 			case "DEMUX16":
-				return <Demux16 />;
+				return (
+					<Demux16 inputs={block.inputs} outputs={block.outputs} />
+				);
 			case "MUX4":
-				return <Mux4 />;
+				return <Mux4 inputs={block.inputs} outputs={block.outputs} />;
 			case "DEMUX4":
-				return <Demux4 />;
+				return <Demux4 inputs={block.inputs} outputs={block.outputs} />;
+			case "RAM_16x4":
+				return (
+					<Ram16x4 inputs={block.inputs} outputs={block.outputs} />
+				);
 			case "LABEL":
 				return (
 					<LabelBlock
@@ -397,6 +404,83 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 										style={{
 											right: -26,
 											top: 18 + idx * 18.5,
+										}}
+										onMouseDown={(e) => {
+											e.stopPropagation();
+											onPinClick(block.id, "output", idx);
+										}}
+									/>
+								))}
+							</>
+						);
+					}
+
+					case "RAM_16x4": {
+						const dataInputs = block.inputs.slice(0, 4);
+						const addrInputs = block.inputs.slice(4, 8);
+						const ctrlInputs = block.inputs.slice(8, 10);
+						const outputs = block.outputs;
+
+						return (
+							<>
+								{/* Wejścia Danych (D0-D3) */}
+								{dataInputs.map((_, idx) => (
+									<div
+										key={`ram-data-${idx}`}
+										className="pin input"
+										style={{ left: -6, top: 23 + idx * 15 }}
+										onMouseDown={(e) => {
+											e.stopPropagation();
+											onPinClick(block.id, "input", idx);
+										}}
+									/>
+								))}
+
+								{/* Wejścia Adresowe (A0-A3) */}
+								{addrInputs.map((_, idx) => (
+									<div
+										key={`ram-addr-${idx}`}
+										className="pin input"
+										style={{ left: -6, top: 93 + idx * 15 }}
+										onMouseDown={(e) => {
+											e.stopPropagation();
+											onPinClick(
+												block.id,
+												"input",
+												4 + idx
+											);
+										}}
+									/>
+								))}
+
+								{/* Wejścia Sterujące (CS - góra, WE - dół) */}
+								<div // CS
+									key="ram-cs"
+									className="pin input"
+									style={{ left: 63, top: -7 }}
+									onMouseDown={(e) => {
+										e.stopPropagation();
+										onPinClick(block.id, "input", 8);
+									}}
+								/>
+								<div // WE
+									key="ram-we"
+									className="pin input"
+									style={{ left: 63, top: 173 }} // 180 (wysokość) - 7
+									onMouseDown={(e) => {
+										e.stopPropagation();
+										onPinClick(block.id, "input", 9);
+									}}
+								/>
+
+								{/* Wyjścia Danych (Q0-Q3) */}
+								{outputs.map((_, idx) => (
+									<div
+										key={`ram-out-${idx}`}
+										className="pin output"
+										style={{
+											right: -47,
+											top: 58 + idx * 15,
 										}}
 										onMouseDown={(e) => {
 											e.stopPropagation();

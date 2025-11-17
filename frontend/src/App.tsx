@@ -123,6 +123,53 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					break;
 				}
 
+				case "RAM_16x4": {
+					// Piny: 4x D (0-3), 4x A (4-7), CS (8), WE (9)
+					const dataIn = b.inputs.slice(0, 4);
+					const addressIn = b.inputs.slice(4, 8);
+					const CS = b.inputs[8] ?? 0;
+					const WE = b.inputs[9] ?? 0;
+
+					if (!b.memory) {
+						b.memory = new Uint8Array(16); // 16 komórek
+					}
+
+					// Oblicz adres (4 bity -> 0-15)
+					let address = 0;
+					if (addressIn[0] === 1) address |= 1; // A0
+					if (addressIn[1] === 1) address |= 2; // A1
+					if (addressIn[2] === 1) address |= 4; // A2
+					if (addressIn[3] === 1) address |= 8; // A3
+
+					// Logika ZAPISU (Asynchroniczny, sterowany poziomem WE)
+					if (CS === 1 && WE === 1) {
+						// Zapis włączony
+						let dataNibble = 0; // 4-bitowa dana (nibble)
+						if (dataIn[0] === 1) dataNibble |= 1; // D0
+						if (dataIn[1] === 1) dataNibble |= 2; // D1
+						if (dataIn[2] === 1) dataNibble |= 4; // D2
+						if (dataIn[3] === 1) dataNibble |= 8; // D3
+
+						b.memory[address] = dataNibble;
+
+						// Podczas zapisu wyjścia są nieaktywne (stan Z)
+						b.outputs.fill(0);
+					}
+					// Logika ODCZYTU (Asynchroniczny)
+					else if (CS === 1 && WE === 0) {
+						// Odczyt włączony
+						const dataNibble = b.memory[address];
+						b.outputs[0] = (dataNibble >> 0) & 1; // Q0
+						b.outputs[1] = (dataNibble >> 1) & 1; // Q1
+						b.outputs[2] = (dataNibble >> 2) & 1; // Q2
+						b.outputs[3] = (dataNibble >> 3) & 1; // Q3
+					} else {
+						// CS = 0 (Chip nieaktywny)
+						b.outputs.fill(0);
+					}
+					break;
+				}
+
 				case "NAND_4":
 				case "NAND_8":
 					b.outputs[0] = b.inputs.every((v) => v === 1) ? 0 : 1;
@@ -543,6 +590,8 @@ function App() {
 			? 20
 			: ["LABEL"].includes(type)
 			? 0
+			: ["RAM_16x4"].includes(type)
+			? 10
 			: 2;
 
 		const outputCount = [
@@ -554,7 +603,7 @@ function App() {
 			? 2
 			: ["LAMP", "LABEL"].includes(type)
 			? 0
-			: ["DEMUX4"].includes(type)
+			: ["DEMUX4", "RAM_16x4"].includes(type)
 			? 4
 			: ["DEMUX16"].includes(type)
 			? 16
@@ -567,6 +616,7 @@ function App() {
 			y: 100 + blocks.length * 40,
 			inputs: new Array(inputCount).fill(0),
 			outputs: new Array(outputCount).fill(0),
+			...(type === "RAM_16x4" && { memory: new Uint8Array(16) }),
 		};
 
 		setBlocks((prev) => evaluateCircuit([...prev, newBlock], connections));

@@ -25,6 +25,7 @@ import Mux16 from "./gates/Mux16";
 import Demux16 from "./gates/Demux16";
 import Mux4 from "./gates/Mux4";
 import Demux4 from "./gates/Demux4";
+import Ram16x4 from "./blocks/Ram16x4";
 
 const categories = [
 	{
@@ -84,6 +85,12 @@ const categories = [
 			{ type: "T_FLIPFLOP", label: "T-FF", component: <TFlipFlop /> },
 			{ type: "JK_FLIPFLOP", label: "JK-FF", component: <JKFlipFlop /> },
 			{ type: "SR_FLIPFLOP", label: "SR-FF", component: <SRFlipFlop /> },
+		],
+	},
+	{
+		name: "Pamięć",
+		items: [
+			{ type: "RAM_16x4", label: "RAM 16x4", component: <Ram16x4 /> },
 		],
 	},
 	{

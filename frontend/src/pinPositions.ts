@@ -117,6 +117,30 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 			};
 		}
 
+		case "RAM_16x4": {
+			// D0-D3
+			if (inputIndex < 4) {
+				return {
+					x: baseX + 1,
+					y: baseY + (23 + inputIndex * 15) + 7,
+				};
+			}
+			// A0-A3
+			if (inputIndex < 8) {
+				const addrIdx = inputIndex - 4;
+				return { x: baseX + 2, y: baseY + (93 + addrIdx * 15) + 7 };
+			}
+			// CS
+			if (inputIndex === 8) {
+				return { x: baseX + 62 + 8, y: baseY - 7 + 7 };
+			}
+			// WE
+			if (inputIndex === 9) {
+				return { x: baseX + 63 + 7, y: baseY + 173 + 6 }; // 180 (height) - 7
+			}
+			break; // Domyślna obsługa (np. dla CLK, jeśli istnieje)
+		}
+
 		// Standardowe bramki
 		default: {
 			return {
@@ -222,6 +246,14 @@ export const getOutputPinPosition = (block: Block, outputIndex: number = 0) => {
 			return {
 				x: baseX + 100, // prawa krawędź
 				y: baseY + 23 + 7, // wyjście centralnie na środku
+			};
+		}
+
+		case "RAM_16x4": {
+			// 4 wyjścia Q0-Q3
+			return {
+				x: baseX + 139, // 140 (width) - 47 (right)
+				y: baseY + (58 + outputIndex * 15) + 7,
 			};
 		}
 
