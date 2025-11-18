@@ -32,6 +32,8 @@ import Ram16x4 from "./blocks/Ram16x4.tsx";
 
 type Props = {
 	block: Block;
+	isSelected: boolean;
+	onSelect: () => void;
 	onMove: (id: number, x: number, y: number, newOutput?: number) => void;
 	onPinClick: (
 		blockId: number,
@@ -40,11 +42,19 @@ type Props = {
 	) => void;
 };
 
-const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
+const DraggableGate: React.FC<Props> = ({
+	block,
+	onMove,
+	onPinClick,
+	isSelected,
+	onSelect,
+}) => {
 	const [dragging, setDragging] = useState(false);
 	const [offset, setOffset] = useState({ x: 0, y: 0 });
 
 	const handleMouseDown = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		onSelect();
 		setDragging(true);
 		setOffset({ x: e.clientX - block.x, y: e.clientY - block.y });
 	};
@@ -201,6 +211,11 @@ const DraggableGate: React.FC<Props> = ({ block, onMove, onPinClick }) => {
 				top: block.y,
 				cursor: "move",
 				overflow: "visible",
+				boxShadow: isSelected
+					? "0 0 0 2px #1976d2, 0 0 10px rgba(25, 118, 210, 0.5)"
+					: "none",
+				zIndex: isSelected ? 1000 : 1,
+				borderRadius: "4px",
 				width:
 					block.type === "NAND_8" || block.type === "NOR_8"
 						? 160

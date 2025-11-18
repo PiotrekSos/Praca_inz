@@ -4,8 +4,14 @@ import DraggableGate from "./components/DraggableGate";
 import type { Block, Connection, BlockType } from "./types.ts";
 import { getInputPinPosition, getOutputPinPosition } from "./pinPositions";
 
+// --- TYP DLA ZAZNACZENIA ---
+type Selection =
+	| { type: "block"; id: number }
+	| { type: "connection"; index: number }
+	| null;
+
 const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
-	const newBlocks = blocks.map((b) => ({ ...b, inputs: [...b.inputs] })); // --- Pętla 1: Ustawienie źródeł i inicjalizacja stanu przerzutników ---
+	const newBlocks = blocks.map((b) => ({ ...b, inputs: [...b.inputs] }));
 
 	for (const b of newBlocks) {
 		switch (b.type) {
@@ -15,13 +21,11 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 			case "ZERO":
 				b.outputs[0] = 0;
 				break;
-			// Inicjalizacja stanu przerzutników
 			case "D_FLIPFLOP":
 			case "T_FLIPFLOP":
 			case "JK_FLIPFLOP":
 			case "SR_FLIPFLOP": {
 				if (!("state" in b)) b.state = 0;
-				// Ustaw wyjścia na podstawie stanu początkowego
 				b.outputs[0] = Number(b.state);
 				b.outputs[1] = Number(!b.state);
 				break;
@@ -31,22 +35,13 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 		}
 	}
 
-	// --- DODANA GŁÓWNA PĘTLA EWALUACJI ---
-	// Powtarzamy ewaluację tyle razy, ile jest bloków, aby zapewnić propagację
 	for (let i = 0; i < newBlocks.length; i++) {
-		// Pętla 2: Resetowanie wejść (z wyjątkiem źródeł)
 		for (const b of newBlocks) {
-			if (
-				b.type !== "ONE" &&
-				b.type !== "ZERO" &&
-				b.type !== "TOGGLE" &&
-				b.type !== "CLOCK"
-			) {
+			if (!["ONE", "ZERO", "TOGGLE", "CLOCK"].includes(b.type)) {
 				b.inputs = b.inputs.map(() => 0);
 			}
 		}
 
-		// Pętla 3: Propagacja sygnałów przez połączenia
 		for (const c of connections) {
 			const from = newBlocks.find((b) => b.id === c.from.blockId);
 			const to = newBlocks.find((b) => b.id === c.to.blockId);
@@ -57,7 +52,6 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 			}
 		}
 
-		// Pętla 4: Obliczanie logiki bramek
 		for (const b of newBlocks) {
 			switch (b.type) {
 				case "AND":
@@ -84,63 +78,36 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 				case "BUFFER":
 					b.outputs[0] = b.inputs[0] || 0;
 					break;
-
 				case "D_FLIPFLOP": {
-					// Wejścia: [D(0), CLK(1), !S_async(2), !R_async(3)]
 					const [D, CLK, S_low, R_low] = b.inputs;
 					if (!("state" in b)) b.state = 0;
-
-					// Logika asynchroniczna (aktywna stanem 0) ma priorytet
-					// Reset (!R = 0) ma wyższy priorytet niż Set (!S = 0)
-					if (R_low === 0) {
-						b.state = 0; // Asynchroniczny Reset
-					} else if (S_low === 0) {
-						b.state = 1; // Asynchroniczny Set
-					} else if (CLK === 1) {
-						// Logika synchroniczna (tylko gdy S i R są nieaktywne '1')
-						b.state = D;
-					}
-					// Jeśli CLK=0, S=1, R=1 -> stan jest podtrzymany
-
+					if (R_low === 0) b.state = 0;
+					else if (S_low === 0) b.state = 1;
+					else if (CLK === 1) b.state = D;
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
 					break;
 				}
 				case "T_FLIPFLOP": {
-					// Wejścia: [T(0), CLK(1), !S_async(2), !R_async(3)]
 					const [T, CLK, S_low, R_low] = b.inputs;
 					if (!("state" in b)) b.state = 0;
-
-					if (R_low === 0) {
-						b.state = 0;
-					} else if (S_low === 0) {
-						b.state = 1;
-					} else if (CLK === 1 && T === 1) {
-						// Synchroniczny toggle
-						b.state = b.state ? 0 : 1;
-					}
-
+					if (R_low === 0) b.state = 0;
+					else if (S_low === 0) b.state = 1;
+					else if (CLK === 1 && T === 1) b.state = b.state ? 0 : 1;
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
 					break;
 				}
 				case "JK_FLIPFLOP": {
-					// Wejścia: [J(0), K(1), CLK(2), !S_async(3), !R_async(4)]
 					const [J, K, CLK, S_low, R_low] = b.inputs;
 					if (!("state" in b)) b.state = 0;
-
-					if (R_low === 0) {
-						b.state = 0;
-					} else if (S_low === 0) {
-						b.state = 1;
-					} else if (CLK === 1) {
-						// Logika synchroniczna
+					if (R_low === 0) b.state = 0;
+					else if (S_low === 0) b.state = 1;
+					else if (CLK === 1) {
 						if (J === 0 && K === 1) b.state = 0;
 						else if (J === 1 && K === 0) b.state = 1;
 						else if (J === 1 && K === 1) b.state = b.state ? 0 : 1;
-						// J=0, K=0 -> stan podtrzymany
 					}
-
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
 					break;
@@ -153,56 +120,95 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					b.outputs[1] = Number(!b.state);
 					break;
 				}
-
 				case "RAM_16x4": {
-					// Piny: 4x D (0-3), 4x A (4-7), !CS (8), !WE (9)
 					const dataIn = b.inputs.slice(0, 4);
 					const addressIn = b.inputs.slice(4, 8);
-					const CS_low = b.inputs[8] ?? 1; // Domyślnie 1 (nieaktywny)
-					const WE_low = b.inputs[9] ?? 1; // Domyślnie 1 (nieaktywny)
+					const CS_low = b.inputs[8] ?? 1;
+					const WE_low = b.inputs[9] ?? 1;
 
-					if (!b.memory) {
-						b.memory = new Uint8Array(16); // 16 komórek
-					}
+					if (!b.memory) b.memory = new Uint8Array(16);
 
-					// Oblicz adres (4 bity -> 0-15)
 					let address = 0;
-					if (addressIn[0] === 1) address |= 1; // A0
-					if (addressIn[1] === 1) address |= 2; // A1
-					if (addressIn[2] === 1) address |= 4; // A2
-					if (addressIn[3] === 1) address |= 8; // A3
+					if (addressIn[0] === 1) address |= 1;
+					if (addressIn[1] === 1) address |= 2;
+					if (addressIn[2] === 1) address |= 4;
+					if (addressIn[3] === 1) address |= 8;
 
-					// Logika ZAPISU (Aktywny CS=0 i WE=0)
 					if (CS_low === 0 && WE_low === 0) {
-						// Zapis włączony
-						let dataNibble = 0; // 4-bitowa dana (nibble)
-						if (dataIn[0] === 1) dataNibble |= 1; // D0
-						if (dataIn[1] === 1) dataNibble |= 2; // D1
-						if (dataIn[2] === 1) dataNibble |= 4; // D2
-						if (dataIn[3] === 1) dataNibble |= 8; // D3
-
+						let dataNibble = 0;
+						if (dataIn[0] === 1) dataNibble |= 1;
+						if (dataIn[1] === 1) dataNibble |= 2;
+						if (dataIn[2] === 1) dataNibble |= 4;
+						if (dataIn[3] === 1) dataNibble |= 8;
 						b.memory[address] = dataNibble;
-
-						// Podczas zapisu wyjścia są w stanie wysokiej impedancji (Hi-Z).
-						// Dla wyjść zanegowanych, Hi-Z = 1 (pull-up).
 						b.outputs.fill(1);
-					}
-					// Logika ODCZYTU (Aktywny CS=0 i WE=1)
-					else if (CS_low === 0 && WE_low === 1) {
-						// Odczyt włączony
+					} else if (CS_low === 0 && WE_low === 1) {
 						const dataNibble = b.memory[address];
-						// Wyjścia są ZANEGOWANE
-						b.outputs[0] = (dataNibble >> 0) & 1 ? 0 : 1; // !Q0
-						b.outputs[1] = (dataNibble >> 1) & 1 ? 0 : 1; // !Q1
-						b.outputs[2] = (dataNibble >> 2) & 1 ? 0 : 1; // !Q2
-						b.outputs[3] = (dataNibble >> 3) & 1 ? 0 : 1; // !Q3
+						b.outputs[0] = (dataNibble >> 0) & 1 ? 0 : 1;
+						b.outputs[1] = (dataNibble >> 1) & 1 ? 0 : 1;
+						b.outputs[2] = (dataNibble >> 2) & 1 ? 0 : 1;
+						b.outputs[3] = (dataNibble >> 3) & 1 ? 0 : 1;
 					} else {
-						// CS = 1 (Chip nieaktywny) -> Wyjścia w stanie Hi-Z (zanegowane = 1)
 						b.outputs.fill(1);
 					}
 					break;
 				}
-
+				case "MUX4": {
+					const dataInputs = b.inputs.slice(0, 4);
+					const selectBits = b.inputs.slice(4, 6);
+					const E_low = b.inputs[6] ?? 1;
+					if (E_low === 0) {
+						const sel = (selectBits[0] << 1) | selectBits[1];
+						const selectedValue = dataInputs[sel] ?? 0;
+						b.outputs[0] = selectedValue === 1 ? 0 : 1;
+					} else {
+						b.outputs[0] = 1;
+					}
+					break;
+				}
+				case "MUX16": {
+					const dataInputs = b.inputs.slice(0, 16);
+					const selectBits = b.inputs.slice(16, 20);
+					const E_low = b.inputs[20] ?? 1;
+					if (E_low === 0) {
+						const sel =
+							(selectBits[0] << 3) |
+							(selectBits[1] << 2) |
+							(selectBits[2] << 1) |
+							selectBits[3];
+						const selectedValue = dataInputs[sel] ?? 0;
+						b.outputs[0] = selectedValue === 1 ? 0 : 1;
+					} else {
+						b.outputs[0] = 1;
+					}
+					break;
+				}
+				case "DEMUX4": {
+					const IN = b.inputs[0];
+					const selectBits = b.inputs.slice(1, 3);
+					const E_low = b.inputs[3] ?? 1;
+					b.outputs = [1, 1, 1, 1];
+					if (E_low === 0) {
+						const sel = (selectBits[0] << 1) | selectBits[1];
+						b.outputs[sel] = IN === 1 ? 0 : 1;
+					}
+					break;
+				}
+				case "DEMUX16": {
+					const IN = b.inputs[0];
+					const selectBits = b.inputs.slice(1, 5);
+					const E_low = b.inputs[5] ?? 1;
+					b.outputs = new Array(16).fill(1);
+					if (E_low === 0) {
+						const sel =
+							(selectBits[0] << 3) |
+							(selectBits[1] << 2) |
+							(selectBits[2] << 1) |
+							selectBits[3];
+						b.outputs[sel] = IN === 1 ? 0 : 1;
+					}
+					break;
+				}
 				case "NAND_4":
 				case "NAND_8":
 					b.outputs[0] = b.inputs.every((v) => v === 1) ? 0 : 1;
@@ -211,88 +217,9 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 				case "NOR_8":
 					b.outputs[0] = b.inputs.some((v) => v === 1) ? 0 : 1;
 					break;
-
-				case "MUX4": {
-					// inputs: I0-I3 (0-3), A0-A1 (4-5), !E (6)
-					const dataInputs = b.inputs.slice(0, 4);
-					const selectBits = b.inputs.slice(4, 6);
-					const E_low = b.inputs[6] ?? 1; // Domyślnie 1 (nieaktywny)
-
-					if (E_low === 0) {
-						// Aktywny stanem niskim
-						const sel = (selectBits[0] << 1) | selectBits[1];
-						const selectedValue = dataInputs[sel] ?? 0;
-						b.outputs[0] = selectedValue === 1 ? 0 : 1; // Wyjście zanegowane
-					} else {
-						b.outputs[0] = 1; // Stan Hi-Z (zanegowane wyjście = 1)
-					}
-					break;
-				}
-				case "MUX16": {
-					// inputs: I0–I15 (0-15), A0–A3 (16-19), !E (20)
-					const dataInputs = b.inputs.slice(0, 16);
-					const selectBits = b.inputs.slice(16, 20);
-					const E_low = b.inputs[20] ?? 1;
-
-					if (E_low === 0) {
-						const sel =
-							(selectBits[0] << 3) |
-							(selectBits[1] << 2) |
-							(selectBits[2] << 1) |
-							selectBits[3];
-						const selectedValue = dataInputs[sel] ?? 0;
-						b.outputs[0] = selectedValue === 1 ? 0 : 1; // Wyjście zanegowane
-					} else {
-						b.outputs[0] = 1; // Stan Hi-Z (zanegowane wyjście = 1)
-					}
-					break;
-				}
-				case "DEMUX4": {
-					// inputs: IN (0), A0-A1 (1-2), !E (3)
-					const IN = b.inputs[0];
-					const selectBits = b.inputs.slice(1, 3);
-					const E_low = b.inputs[3] ?? 1;
-
-					b.outputs = [1, 1, 1, 1]; // Domyślnie wszystkie wyjścia zanegowane są Hi-Z (1)
-
-					if (E_low === 0) {
-						// Aktywny
-						const sel = (selectBits[0] << 1) | selectBits[1];
-						// Ustawiamy wybrane wyjście na !IN
-						b.outputs[sel] = IN === 1 ? 0 : 1;
-					}
-					break;
-				}
-				case "DEMUX16": {
-					// inputs: IN (0), A0–A3 (1-4), !E (5)
-					const IN = b.inputs[0];
-					const selectBits = b.inputs.slice(1, 5);
-					const E_low = b.inputs[5] ?? 1;
-
-					b.outputs = new Array(16).fill(1); // Domyślnie Hi-Z (1)
-
-					if (E_low === 0) {
-						const sel =
-							(selectBits[0] << 3) |
-							(selectBits[1] << 2) |
-							(selectBits[2] << 1) |
-							selectBits[3];
-						// Ustawiamy wybrane wyjście na !IN
-						b.outputs[sel] = IN === 1 ? 0 : 1;
-					}
-					break;
-				}
-				case "TOGGLE":
-				case "CLOCK":
-				case "ONE":
-				case "ZERO": // Te bloki nie są obliczane tutaj (są źródłami)
-					break;
-				default:
-					break;
 			}
 		}
-	} // --- KONIEC DODANEJ PĘTLI ---
-
+	}
 	return newBlocks;
 };
 
@@ -302,17 +229,19 @@ function EditableWire({
 	to,
 	isHigh,
 	onChange,
+	isSelected,
+	onSelect,
 }: {
 	connection: Connection & { points?: { x: number; y: number }[] };
 	from: { x: number; y: number };
 	to: { x: number; y: number };
 	isHigh: boolean;
 	onChange: (newPoints: { x: number; y: number }[]) => void;
+	isSelected: boolean;
+	onSelect: () => void;
 }) {
 	const fromRef = useRef(from);
 	const toRef = useRef(to);
-
-	// --- POPRAWKA BŁĘDU PĘTLI ---
 	const onChangeRef = useRef(onChange);
 
 	useEffect(() => {
@@ -332,88 +261,62 @@ function EditableWire({
 			: generateDefaultPoints(from, to)
 	);
 	const pointsRef = useRef(localPoints.slice());
-
-	// --- STAN DLA POKAZYWANIA KÓŁEK ---
 	const [isHovered, setIsHovered] = useState(false);
 
-	// prostowanie pinów (z poprawką na pętlę)
 	useEffect(() => {
 		const pts = pointsRef.current.slice();
 		if (!pts.length) return;
 		const f = fromRef.current;
 		const t = toRef.current;
 
-		// Prostowanie FROM
 		if (pts.length >= 1) {
 			const first = pts[0];
 			const verticalFirst =
 				Math.abs(first.x - f.x) < Math.abs(first.y - f.y);
-
 			if (verticalFirst) {
 				first.x = f.x;
-				if (pts.length >= 2) {
-					pts[1].y = first.y;
-				}
+				if (pts.length >= 2) pts[1].y = first.y;
 			} else {
 				first.y = f.y;
-				if (pts.length >= 2) {
-					pts[1].x = first.x;
-				}
+				if (pts.length >= 2) pts[1].x = first.x;
 			}
 		}
 
-		// Prostowanie TO
 		if (pts.length >= 1) {
 			const lastIdx = pts.length - 1;
 			const last = pts[lastIdx];
 			const verticalLast =
 				Math.abs(t.x - last.x) < Math.abs(t.y - last.y);
-
 			if (verticalLast) {
 				last.x = t.x;
-				if (pts.length >= 2) {
-					pts[lastIdx - 1].y = last.y;
-				}
+				if (pts.length >= 2) pts[lastIdx - 1].y = last.y;
 			} else {
 				last.y = t.y;
-				if (pts.length >= 2) {
-					pts[lastIdx - 1].x = last.x;
-				}
+				if (pts.length >= 2) pts[lastIdx - 1].x = last.x;
 			}
 		}
 
 		pointsRef.current = pts;
 		setLocalPoints(pts.slice());
-
-		// Wywołanie 'onChange' przez ref, aby uniknąć pętli
 		onChangeRef.current(pts.slice());
-	}, [from.x, from.y, to.x, to.y]); // Usunięto 'onChange' z zależności
+	}, [from.x, from.y, to.x, to.y]);
 
-	// 🔧 Funkcja scalająca punkty leżące na jednej linii
 	const mergeCollinearPoints = (pts: { x: number; y: number }[]) => {
 		if (pts.length < 2) return pts;
 		const full = [fromRef.current, ...pts, toRef.current];
 		const simplified = [full[0]];
-
 		for (let i = 1; i < full.length - 1; i++) {
 			const prev = simplified[simplified.length - 1];
 			const curr = full[i];
 			const next = full[i + 1];
-
-			// sprawdź czy punkty są kolinearne w poziomie lub pionie
-			const collinearX = prev.x === curr.x && curr.x === next.x;
-			const collinearY = prev.y === curr.y && curr.y === next.y;
-
-			if (collinearX || collinearY) {
-				// pomijamy środkowy punkt (curr)
+			if (
+				(prev.x === curr.x && curr.x === next.x) ||
+				(prev.y === curr.y && curr.y === next.y)
+			)
 				continue;
-			} else {
-				simplified.push(curr);
-			}
+			else simplified.push(curr);
 		}
-
 		simplified.push(full[full.length - 1]);
-		// wycinamy piny i zwracamy tylko punkty pośrednie
 		return simplified.slice(1, -1);
 	};
 
@@ -448,7 +351,6 @@ function EditableWire({
 		if (a.x === b.x) newPt.x = a.x;
 		else if (a.y === b.y) newPt.y = a.y;
 		pts.splice(segIdx, 0, newPt);
-
 		const merged = mergeCollinearPoints(pts);
 		pointsRef.current = merged;
 		setLocalPoints(merged.slice());
@@ -479,22 +381,16 @@ function EditableWire({
 
 			if (seg === 0) {
 				const from = fromRef.current;
-				// Musimy obsłużyć przypadek, gdy newPts jest puste (choć domyślnie ma 2)
 				const first =
 					newPts.length > 0
 						? newPts[0]
 						: generateDefaultPoints(from, toRef.current)[0];
-
 				const moved = getMovedPoint(first, m.isVertical, dx, dy);
-
-				// Używamy 'moved' do obliczenia nowej orientacji
 				const vertical =
 					Math.abs(from.x - moved.x) < Math.abs(from.y - moved.y);
-
 				const corner = vertical
-					? { x: moved.x, y: from.y } // Jeśli pionowy, kolanko jest poziome (Moved.x, Pin.y)
-					: { x: from.x, y: moved.y }; // Jeśli poziomy, kolanko jest pionowe (Pin.x, Moved.y)
-
+					? { x: moved.x, y: from.y }
+					: { x: from.x, y: moved.y };
 				newPts = [corner, moved, ...newPts.slice(1)];
 			} else if (seg > 0 && seg < startPts.length) {
 				const p_start_idx = seg - 1;
@@ -515,20 +411,13 @@ function EditableWire({
 				const to = toRef.current;
 				const last = newPts[newPts.length - 1];
 				const moved = getMovedPoint(last, m.isVertical, dx, dy);
-
-				// Używamy 'moved' do obliczenia nowej orientacji
 				const vertical =
 					Math.abs(to.x - moved.x) < Math.abs(to.y - moved.y);
-
-				// Ta logika działała poprawnie
 				const corner = vertical
-					? { x: moved.x, y: to.y } // Jeśli pionowy, kolanko jest poziome (Moved.x, Pin.y)
-					: { x: to.x, y: moved.y }; // Jeśli poziomy, kolanko jest pionowe (Pin.x, Moved.y)
-
+					? { x: moved.x, y: to.y }
+					: { x: to.x, y: moved.y };
 				newPts = [...newPts.slice(0, -1), moved, corner];
 			}
-
-			// prostowanie skośnych
 			if (newPts.length >= 2) {
 				const first = newPts[0];
 				const second = newPts[1];
@@ -539,7 +428,6 @@ function EditableWire({
 				if (last.x !== prev.x && last.y !== prev.y)
 					newPts[newPts.length - 2] = { x: prev.x, y: last.y };
 			}
-
 			push(newPts);
 		};
 
@@ -547,7 +435,6 @@ function EditableWire({
 			window.removeEventListener("mousemove", move);
 			window.removeEventListener("mouseup", up);
 		};
-
 		window.addEventListener("mousemove", move);
 		window.addEventListener("mouseup", up);
 	};
@@ -558,29 +445,29 @@ function EditableWire({
 		.join(" ");
 	const midpoints = computeMidpoints();
 
+	const strokeColor = isSelected ? "#0800e4ff" : isHigh ? "green" : "#1976d2";
+	const strokeWidth = isSelected ? 6 : 3;
+
 	return (
-		// Wrapper <g> do wykrywania najechania
 		<g
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
-			{/* Niewidzialny hitbox */}
+			{/* HITBOX (Przezroczysta linia) - Tutaj dodajemy obsługę kliknięcia/zaznaczania */}
 			<path
 				d={pathData}
 				stroke="transparent"
 				strokeWidth={20}
 				fill="none"
 				style={{ cursor: "pointer", pointerEvents: "stroke" }}
-			/>
-
-			{/* Widzialna linia */}
-			<path
-				d={pathData}
-				stroke={isHigh ? "green" : "#1976d2"}
-				strokeWidth={3}
-				fill="none"
-				style={{ cursor: "pointer", pointerEvents: "stroke" }}
+				// Używamy onMouseDown, aby działało szybko i pewnie, tak samo jak bloki
+				onMouseDown={(e) => {
+					e.stopPropagation();
+					onSelect();
+				}}
+				// Zachowujemy onClick do dodawania punktów, jeśli chcesz (opcjonalne)
 				onClick={(e) => {
+					e.stopPropagation();
 					const svg = e.currentTarget.closest("svg");
 					if (!svg) return;
 					const CTM = svg.getScreenCTM();
@@ -608,7 +495,15 @@ function EditableWire({
 				}}
 			/>
 
-			{/* Kółka renderowane warunkowo */}
+			{/* WIDOCZNA LINIA - tylko do wyświetlania */}
+			<path
+				d={pathData}
+				stroke={strokeColor}
+				strokeWidth={strokeWidth}
+				fill="none"
+				style={{ pointerEvents: "none", transition: "stroke 0.2s" }}
+			/>
+
 			{isHovered &&
 				midpoints.map((m, i) => (
 					<circle
@@ -632,9 +527,39 @@ function EditableWire({
 function App() {
 	const [blocks, setBlocks] = useState<Block[]>([]);
 	const [connections, setConnections] = useState<Connection[]>([]);
+	const [selection, setSelection] = useState<Selection>(null);
 	const [pending, setPending] = useState<{
 		from: { blockId: number; outputIndex?: number } | null;
 	}>({ from: null });
+
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if ((e.key === "Delete" || e.key === "Backspace") && selection) {
+				if (selection.type === "block") {
+					const blockId = selection.id;
+					const newBlocks = blocks.filter((b) => b.id !== blockId);
+					const newConnections = connections.filter(
+						(c) =>
+							c.from.blockId !== blockId &&
+							c.to.blockId !== blockId
+					);
+					setBlocks(evaluateCircuit(newBlocks, newConnections));
+					setConnections(newConnections);
+					setSelection(null);
+				} else if (selection.type === "connection") {
+					const connIndex = selection.index;
+					const newConnections = connections.filter(
+						(_, index) => index !== connIndex
+					);
+					setBlocks((prev) => evaluateCircuit(prev, newConnections));
+					setConnections(newConnections);
+					setSelection(null);
+				}
+			}
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [selection, blocks, connections]);
 
 	const handleAddBlock = (type: BlockType) => {
 		const inputCount = ["NOT", "BUFFER", "LAMP"].includes(type)
@@ -666,7 +591,6 @@ function App() {
 			: ["RAM_16x4"].includes(type)
 			? 10
 			: 2;
-
 		const outputCount = [
 			"JK_FLIPFLOP",
 			"SR_FLIPFLOP",
@@ -683,15 +607,14 @@ function App() {
 			: 1;
 
 		const newBlock: Block = {
-			id: blocks.length,
+			id: Math.max(0, ...blocks.map((b) => b.id)) + 1,
 			type,
-			x: 200 + blocks.length * 40,
-			y: 100 + blocks.length * 40,
+			x: 200 + (blocks.length % 10) * 40,
+			y: 100 + (blocks.length % 10) * 40,
 			inputs: new Array(inputCount).fill(0),
 			outputs: new Array(outputCount).fill(0),
 			...(type === "RAM_16x4" && { memory: new Uint8Array(16) }),
 		};
-
 		setBlocks((prev) => evaluateCircuit([...prev, newBlock], connections));
 	};
 
@@ -703,7 +626,6 @@ function App() {
 	) => {
 		setBlocks((prevBlocks) => {
 			let updated = prevBlocks.map((b) => {
-				// jeśli to TOGGLE i kliknięto go (czyli zmienił stan)
 				if (
 					b.id === id &&
 					b.type === "TOGGLE" &&
@@ -711,21 +633,15 @@ function App() {
 				) {
 					return { ...b, outputs: [newOutput] };
 				}
-				// przesuwanie elementu
 				if (b.id === id) {
 					return { ...b, x, y };
 				}
 				return b;
 			});
-
-			// jeśli kliknięto TOGGLE — przelicz cały układ od razu
 			const isToggle = prevBlocks.find(
 				(b) => b.id === id && b.type === "TOGGLE"
 			);
-			if (isToggle) {
-				updated = evaluateCircuit(updated, connections);
-			}
-
+			if (isToggle) updated = evaluateCircuit(updated, connections);
 			return updated;
 		});
 	};
@@ -738,6 +654,7 @@ function App() {
 		if (pin === "output" && !pending.from) {
 			setPending({ from: { blockId, outputIndex: index ?? 0 } });
 		} else if (pin === "input" && pending.from) {
+			if (pending.from.blockId === blockId) return;
 			const newConnections = [
 				...connections,
 				{
@@ -746,11 +663,7 @@ function App() {
 						pin: "output",
 						outputIndex: pending.from.outputIndex ?? 0,
 					},
-					to: {
-						blockId,
-						pin: "input",
-						inputIndex: index ?? 0,
-					},
+					to: { blockId, pin: "input", inputIndex: index ?? 0 },
 				},
 			];
 			setConnections(newConnections);
@@ -770,7 +683,6 @@ function App() {
 				return evaluateCircuit(updated, connections);
 			});
 		}, 1000);
-
 		return () => clearInterval(interval);
 	}, [connections]);
 
@@ -778,11 +690,8 @@ function App() {
 		<div style={{ display: "flex", height: "100vh" }}>
 			<Toolbox onAddGate={handleAddBlock} />
 			<div
-				style={{
-					flex: 1,
-					position: "relative",
-					background: "#f0f0f0",
-				}}
+				style={{ flex: 1, position: "relative", background: "#f0f0f0" }}
+				// Usunięto onMouseDown stąd, bo SVG i tak je blokowało
 			>
 				<svg
 					style={{
@@ -792,6 +701,13 @@ function App() {
 						width: "100%",
 						height: "100%",
 						pointerEvents: "all",
+					}}
+					// DODANO TUTAJ: Czyszczenie zaznaczenia przy kliknięciu w tło SVG
+					onMouseDown={(e) => {
+						// Sprawdzamy czy kliknięto bezpośrednio w SVG, a nie w kabel
+						if (e.target === e.currentTarget) {
+							setSelection(null);
+						}
 					}}
 				>
 					{connections.map((c, i) => {
@@ -811,9 +727,12 @@ function App() {
 							toBlock,
 							c.to.inputIndex
 						);
-
 						const isHigh =
 							fromBlock.outputs[c.from.outputIndex ?? 0] === 1;
+
+						const isSelected =
+							selection?.type === "connection" &&
+							selection.index === i;
 
 						return (
 							<EditableWire
@@ -822,6 +741,13 @@ function App() {
 								from={from}
 								to={to}
 								isHigh={isHigh}
+								isSelected={isSelected}
+								onSelect={() =>
+									setSelection({
+										type: "connection",
+										index: i,
+									})
+								}
 								onChange={(newPoints) => {
 									setConnections((prev) =>
 										prev.map((conn, idx) =>
@@ -842,6 +768,12 @@ function App() {
 						block={b}
 						onMove={handleMove}
 						onPinClick={handlePinClick}
+						isSelected={
+							selection?.type === "block" && selection.id === b.id
+						}
+						onSelect={() =>
+							setSelection({ type: "block", id: b.id })
+						}
 					/>
 				))}
 			</div>
