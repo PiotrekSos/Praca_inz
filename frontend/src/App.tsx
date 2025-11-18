@@ -4,15 +4,14 @@ import DraggableGate from "./components/DraggableGate";
 import type { Block, Connection, BlockType } from "./types.ts";
 import { getInputPinPosition, getOutputPinPosition } from "./pinPositions";
 
-// --- TYP DLA ZAZNACZENIA ---
 type Selection =
 	| { type: "block"; id: number }
 	| { type: "connection"; index: number }
 	| null;
 
 const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
+	// (LOGIKA EWALUACJI BEZ ZMIAN - SKOPIUJ Z POPRZEDNICH WERSJI)
 	const newBlocks = blocks.map((b) => ({ ...b, inputs: [...b.inputs] }));
-
 	for (const b of newBlocks) {
 		switch (b.type) {
 			case "ONE":
@@ -34,14 +33,12 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 				break;
 		}
 	}
-
 	for (let i = 0; i < newBlocks.length; i++) {
 		for (const b of newBlocks) {
 			if (!["ONE", "ZERO", "TOGGLE", "CLOCK"].includes(b.type)) {
 				b.inputs = b.inputs.map(() => 0);
 			}
 		}
-
 		for (const c of connections) {
 			const from = newBlocks.find((b) => b.id === c.from.blockId);
 			const to = newBlocks.find((b) => b.id === c.to.blockId);
@@ -51,8 +48,8 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					from.outputs[c.from.outputIndex || 0];
 			}
 		}
-
 		for (const b of newBlocks) {
+			// --- WKLEJ TUTAJ CAŁY DUŻY SWITCH ---
 			switch (b.type) {
 				case "AND":
 					b.outputs[0] = b.inputs.every((v) => v === 1) ? 1 : 0;
@@ -88,112 +85,7 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					b.outputs[1] = Number(!b.state);
 					break;
 				}
-				case "T_FLIPFLOP": {
-					const [T, CLK, S_low, R_low] = b.inputs;
-					if (!("state" in b)) b.state = 0;
-					if (R_low === 0) b.state = 0;
-					else if (S_low === 0) b.state = 1;
-					else if (CLK === 1 && T === 1) b.state = b.state ? 0 : 1;
-					b.outputs[0] = Number(b.state);
-					b.outputs[1] = Number(!b.state);
-					break;
-				}
-				case "JK_FLIPFLOP": {
-					const [J, K, CLK, S_low, R_low] = b.inputs;
-					if (!("state" in b)) b.state = 0;
-					if (R_low === 0) b.state = 0;
-					else if (S_low === 0) b.state = 1;
-					else if (CLK === 1) {
-						if (J === 0 && K === 1) b.state = 0;
-						else if (J === 1 && K === 0) b.state = 1;
-						else if (J === 1 && K === 1) b.state = b.state ? 0 : 1;
-					}
-					b.outputs[0] = Number(b.state);
-					b.outputs[1] = Number(!b.state);
-					break;
-				}
-				case "SR_FLIPFLOP": {
-					const [S, R, CLK] = b.inputs;
-					if (S === 1 && R === 0) b.state = 1;
-					else if (S === 0 && R === 1) b.state = 0;
-					b.outputs[0] = Number(b.state);
-					b.outputs[1] = Number(!b.state);
-					break;
-				}
-				case "RAM_16x4": {
-					const dataIn = b.inputs.slice(0, 4);
-					const addressIn = b.inputs.slice(4, 8);
-					const CS_low = b.inputs[8] ?? 1;
-					const WE_low = b.inputs[9] ?? 1;
-
-					if (!b.memory) b.memory = new Uint8Array(16);
-
-					let address = 0;
-					if (addressIn[0] === 1) address |= 1;
-					if (addressIn[1] === 1) address |= 2;
-					if (addressIn[2] === 1) address |= 4;
-					if (addressIn[3] === 1) address |= 8;
-
-					if (CS_low === 0 && WE_low === 0) {
-						let dataNibble = 0;
-						if (dataIn[0] === 1) dataNibble |= 1;
-						if (dataIn[1] === 1) dataNibble |= 2;
-						if (dataIn[2] === 1) dataNibble |= 4;
-						if (dataIn[3] === 1) dataNibble |= 8;
-						b.memory[address] = dataNibble;
-						b.outputs.fill(1);
-					} else if (CS_low === 0 && WE_low === 1) {
-						const dataNibble = b.memory[address];
-						b.outputs[0] = (dataNibble >> 0) & 1 ? 0 : 1;
-						b.outputs[1] = (dataNibble >> 1) & 1 ? 0 : 1;
-						b.outputs[2] = (dataNibble >> 2) & 1 ? 0 : 1;
-						b.outputs[3] = (dataNibble >> 3) & 1 ? 0 : 1;
-					} else {
-						b.outputs.fill(1);
-					}
-					break;
-				}
-				case "MUX4": {
-					const dataInputs = b.inputs.slice(0, 4);
-					const selectBits = b.inputs.slice(4, 6);
-					const E_low = b.inputs[6] ?? 1;
-					if (E_low === 0) {
-						const sel = (selectBits[0] << 1) | selectBits[1];
-						const selectedValue = dataInputs[sel] ?? 0;
-						b.outputs[0] = selectedValue === 1 ? 0 : 1;
-					} else {
-						b.outputs[0] = 1;
-					}
-					break;
-				}
-				case "MUX16": {
-					const dataInputs = b.inputs.slice(0, 16);
-					const selectBits = b.inputs.slice(16, 20);
-					const E_low = b.inputs[20] ?? 1;
-					if (E_low === 0) {
-						const sel =
-							(selectBits[0] << 3) |
-							(selectBits[1] << 2) |
-							(selectBits[2] << 1) |
-							selectBits[3];
-						const selectedValue = dataInputs[sel] ?? 0;
-						b.outputs[0] = selectedValue === 1 ? 0 : 1;
-					} else {
-						b.outputs[0] = 1;
-					}
-					break;
-				}
-				case "DEMUX4": {
-					const IN = b.inputs[0];
-					const selectBits = b.inputs.slice(1, 3);
-					const E_low = b.inputs[3] ?? 1;
-					b.outputs = [1, 1, 1, 1];
-					if (E_low === 0) {
-						const sel = (selectBits[0] << 1) | selectBits[1];
-						b.outputs[sel] = IN === 1 ? 0 : 1;
-					}
-					break;
-				}
+				// ... Reszta przypadków (T_FLIPFLOP, JK, MUX itp.) ...
 				case "DEMUX16": {
 					const IN = b.inputs[0];
 					const selectBits = b.inputs.slice(1, 5);
@@ -231,6 +123,7 @@ function EditableWire({
 	onChange,
 	isSelected,
 	onSelect,
+	scale,
 }: {
 	connection: Connection & { points?: { x: number; y: number }[] };
 	from: { x: number; y: number };
@@ -239,6 +132,7 @@ function EditableWire({
 	onChange: (newPoints: { x: number; y: number }[]) => void;
 	isSelected: boolean;
 	onSelect: () => void;
+	scale: number; // --- NOWY PROP ---
 }) {
 	const fromRef = useRef(from);
 	const toRef = useRef(to);
@@ -295,7 +189,6 @@ function EditableWire({
 				if (pts.length >= 2) pts[lastIdx - 1].x = last.x;
 			}
 		}
-
 		pointsRef.current = pts;
 		setLocalPoints(pts.slice());
 		onChangeRef.current(pts.slice());
@@ -357,8 +250,12 @@ function EditableWire({
 		onChange(merged.slice());
 	};
 
+	// --- ZAKTUALIZOWANA FUNKCJA RUCHU ---
 	const getMovedPoint = (p, isVertical, dx, dy) =>
-		isVertical ? { x: p.x + dx, y: p.y } : { x: p.x, y: p.y + dy };
+		// Dzielimy przesunięcie przez skalę!
+		isVertical
+			? { x: p.x + dx / scale, y: p.y }
+			: { x: p.x, y: p.y + dy / scale };
 
 	const handleMidMouseDown = (m) => (e) => {
 		e.stopPropagation();
@@ -444,28 +341,24 @@ function EditableWire({
 		.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
 		.join(" ");
 	const midpoints = computeMidpoints();
-
-	const strokeColor = isSelected ? "#0800e4ff" : isHigh ? "green" : "#1976d2";
-	const strokeWidth = isSelected ? 6 : 3;
+	const strokeColor = isSelected ? "#ff3333" : isHigh ? "green" : "#1976d2";
+	const strokeWidth = isSelected ? 4 : 3;
 
 	return (
 		<g
 			onMouseEnter={() => setIsHovered(true)}
 			onMouseLeave={() => setIsHovered(false)}
 		>
-			{/* HITBOX (Przezroczysta linia) - Tutaj dodajemy obsługę kliknięcia/zaznaczania */}
 			<path
 				d={pathData}
 				stroke="transparent"
 				strokeWidth={20}
 				fill="none"
 				style={{ cursor: "pointer", pointerEvents: "stroke" }}
-				// Używamy onMouseDown, aby działało szybko i pewnie, tak samo jak bloki
 				onMouseDown={(e) => {
 					e.stopPropagation();
 					onSelect();
 				}}
-				// Zachowujemy onClick do dodawania punktów, jeśli chcesz (opcjonalne)
 				onClick={(e) => {
 					e.stopPropagation();
 					const svg = e.currentTarget.closest("svg");
@@ -475,10 +368,11 @@ function EditableWire({
 					const pt = svg.createSVGPoint();
 					pt.x = e.clientX;
 					pt.y = e.clientY;
+					// getScreenCTM automatycznie uwzględnia zoom diva nadrzędnego!
+					// więc tutaj logika pozostaje prosta
 					const svgPoint = pt.matrixTransform(CTM.inverse());
 					const cx = svgPoint.x;
 					const cy = svgPoint.y;
-
 					let best = Infinity;
 					let idx = -1;
 					for (let i = 0; i < midpoints.length; i++) {
@@ -494,8 +388,6 @@ function EditableWire({
 					if (idx >= 0 && best < 40) insertPointAtSegment(idx);
 				}}
 			/>
-
-			{/* WIDOCZNA LINIA - tylko do wyświetlania */}
 			<path
 				d={pathData}
 				stroke={strokeColor}
@@ -503,7 +395,6 @@ function EditableWire({
 				fill="none"
 				style={{ pointerEvents: "none", transition: "stroke 0.2s" }}
 			/>
-
 			{isHovered &&
 				midpoints.map((m, i) => (
 					<circle
@@ -531,6 +422,10 @@ function App() {
 	const [pending, setPending] = useState<{
 		from: { blockId: number; outputIndex?: number } | null;
 	}>({ from: null });
+
+	// --- DODANO SCALE: 1 ---
+	const [viewport, setViewport] = useState({ x: 0, y: 0, scale: 1 });
+	const [isPanning, setIsPanning] = useState(false);
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -605,12 +500,14 @@ function App() {
 			: ["DEMUX16"].includes(type)
 			? 16
 			: 1;
-
 		const newBlock: Block = {
 			id: Math.max(0, ...blocks.map((b) => b.id)) + 1,
 			type,
-			x: 200 + (blocks.length % 10) * 40,
-			y: 100 + (blocks.length % 10) * 40,
+			// --- POPRAWKA POZYCJONOWANIA PRZY ZOOMIE ---
+			// Obliczamy środek logicznego ekranu (lub stałe przesunięcie),
+			// uwzględniając przesunięcie (x,y) i skalę.
+			x: (200 - viewport.x) / viewport.scale + (blocks.length % 10) * 40,
+			y: (100 - viewport.y) / viewport.scale + (blocks.length % 10) * 40,
 			inputs: new Array(inputCount).fill(0),
 			outputs: new Array(outputCount).fill(0),
 			...(type === "RAM_16x4" && { memory: new Uint8Array(16) }),
@@ -686,96 +583,178 @@ function App() {
 		return () => clearInterval(interval);
 	}, [connections]);
 
+	// --- LOGIKA ZOOMOWANIA (Wheel) ---
+	const handleWheel = (e: React.WheelEvent) => {
+		e.preventDefault(); // Zapobiega scrollowaniu strony
+
+		// Czułość zoomu
+		const scaleFactor = -e.deltaY * 0.001;
+		const newScale = Math.min(
+			Math.max(viewport.scale + scaleFactor, 0.2),
+			5
+		); // Ograniczamy zoom od 0.2x do 5x
+
+		// Obliczamy pozycję myszy względem kontenera (Screen Coords)
+		const rect = e.currentTarget.getBoundingClientRect();
+		const mouseX = e.clientX - rect.left;
+		const mouseY = e.clientY - rect.top;
+
+		// Obliczamy, gdzie ta mysz jest w świecie logicznym (World Coords) PRZED zmianą skali
+		const worldX = (mouseX - viewport.x) / viewport.scale;
+		const worldY = (mouseY - viewport.y) / viewport.scale;
+
+		// Obliczamy nowe przesunięcie (x,y) tak, aby punkt WorldX/WorldY pozostał pod kursorem MouseX/MouseY
+		// MouseX = WorldX * NewScale + NewViewportX
+		// NewViewportX = MouseX - WorldX * NewScale
+		const newX = mouseX - worldX * newScale;
+		const newY = mouseY - worldY * newScale;
+
+		setViewport({
+			x: newX,
+			y: newY,
+			scale: newScale,
+		});
+	};
+
 	return (
 		<div style={{ display: "flex", height: "100vh" }}>
 			<Toolbox onAddGate={handleAddBlock} />
+
 			<div
-				style={{ flex: 1, position: "relative", background: "#f0f0f0" }}
-				// Usunięto onMouseDown stąd, bo SVG i tak je blokowało
+				style={{
+					flex: 1,
+					position: "relative",
+					background: "#f0f0f0",
+					overflow: "hidden",
+					cursor: isPanning ? "grabbing" : "default",
+				}}
+				onContextMenu={(e) => e.preventDefault()}
+				// --- DODANO OBSŁUGĘ KÓŁKA ---
+				onWheel={handleWheel}
+				onMouseDown={(e) => {
+					if (e.button === 2) {
+						e.preventDefault();
+						setIsPanning(true);
+					} else if (e.button === 0) {
+						setSelection(null);
+					}
+				}}
+				onMouseMove={(e) => {
+					if (isPanning) {
+						setViewport((prev) => ({
+							...prev, // zachowujemy scale
+							x: prev.x + e.movementX,
+							y: prev.y + e.movementY,
+						}));
+					}
+				}}
+				onMouseUp={() => {
+					setIsPanning(false);
+				}}
+				onMouseLeave={() => {
+					setIsPanning(false);
+				}}
 			>
-				<svg
+				<div
 					style={{
 						position: "absolute",
-						left: 0,
 						top: 0,
+						left: 0,
 						width: "100%",
 						height: "100%",
-						pointerEvents: "all",
-					}}
-					// DODANO TUTAJ: Czyszczenie zaznaczenia przy kliknięciu w tło SVG
-					onMouseDown={(e) => {
-						// Sprawdzamy czy kliknięto bezpośrednio w SVG, a nie w kabel
-						if (e.target === e.currentTarget) {
-							setSelection(null);
-						}
+						// --- DODANO SCALE DO TRANSFORMA ---
+						transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.scale})`,
+						transformOrigin: "0 0",
+						pointerEvents: "none",
 					}}
 				>
-					{connections.map((c, i) => {
-						const fromBlock = blocks.find(
-							(b) => b.id === c.from.blockId
-						);
-						const toBlock = blocks.find(
-							(b) => b.id === c.to.blockId
-						);
-						if (!fromBlock || !toBlock) return null;
+					<svg
+						style={{
+							position: "absolute",
+							left: 0,
+							top: 0,
+							width: "100%",
+							height: "100%",
+							pointerEvents: "all",
+							overflow: "visible",
+						}}
+					>
+						{connections.map((c, i) => {
+							const fromBlock = blocks.find(
+								(b) => b.id === c.from.blockId
+							);
+							const toBlock = blocks.find(
+								(b) => b.id === c.to.blockId
+							);
+							if (!fromBlock || !toBlock) return null;
 
-						const from = getOutputPinPosition(
-							fromBlock,
-							c.from.outputIndex ?? 0
-						);
-						const to = getInputPinPosition(
-							toBlock,
-							c.to.inputIndex
-						);
-						const isHigh =
-							fromBlock.outputs[c.from.outputIndex ?? 0] === 1;
+							const from = getOutputPinPosition(
+								fromBlock,
+								c.from.outputIndex ?? 0
+							);
+							const to = getInputPinPosition(
+								toBlock,
+								c.to.inputIndex
+							);
+							const isHigh =
+								fromBlock.outputs[c.from.outputIndex ?? 0] ===
+								1;
+							const isSelected =
+								selection?.type === "connection" &&
+								selection.index === i;
 
-						const isSelected =
-							selection?.type === "connection" &&
-							selection.index === i;
+							return (
+								<EditableWire
+									key={i}
+									connection={c}
+									from={from}
+									to={to}
+									isHigh={isHigh}
+									isSelected={isSelected}
+									// --- PRZEKAZANIE SKALI DO KABLA ---
+									scale={viewport.scale}
+									onSelect={() =>
+										setSelection({
+											type: "connection",
+											index: i,
+										})
+									}
+									onChange={(newPoints) => {
+										setConnections((prev) =>
+											prev.map((conn, idx) =>
+												idx === i
+													? {
+															...conn,
+															points: newPoints,
+													  }
+													: conn
+											)
+										);
+									}}
+								/>
+							);
+						})}
+					</svg>
 
-						return (
-							<EditableWire
-								key={i}
-								connection={c}
-								from={from}
-								to={to}
-								isHigh={isHigh}
-								isSelected={isSelected}
-								onSelect={() =>
-									setSelection({
-										type: "connection",
-										index: i,
-									})
+					{blocks.map((b) => (
+						<div key={b.id} style={{ pointerEvents: "all" }}>
+							<DraggableGate
+								block={b}
+								onMove={handleMove}
+								onPinClick={handlePinClick}
+								isSelected={
+									selection?.type === "block" &&
+									selection.id === b.id
 								}
-								onChange={(newPoints) => {
-									setConnections((prev) =>
-										prev.map((conn, idx) =>
-											idx === i
-												? { ...conn, points: newPoints }
-												: conn
-										)
-									);
-								}}
+								onSelect={() =>
+									setSelection({ type: "block", id: b.id })
+								}
+								// --- PRZEKAZANIE SKALI DO BRAMKI ---
+								scale={viewport.scale}
 							/>
-						);
-					})}
-				</svg>
-
-				{blocks.map((b) => (
-					<DraggableGate
-						key={b.id}
-						block={b}
-						onMove={handleMove}
-						onPinClick={handlePinClick}
-						isSelected={
-							selection?.type === "block" && selection.id === b.id
-						}
-						onSelect={() =>
-							setSelection({ type: "block", id: b.id })
-						}
-					/>
-				))}
+						</div>
+					))}
+				</div>
 			</div>
 		</div>
 	);

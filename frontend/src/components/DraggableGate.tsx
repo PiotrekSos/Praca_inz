@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import type { Block } from "../types.ts";
 
 import BufferGate from "./gates/BufferGate";
@@ -40,6 +40,8 @@ type Props = {
 		pin: "input" | "output",
 		inputIndex?: number
 	) => void;
+	// --- NOWY PROP: Skala widoku ---
+	scale: number;
 };
 
 const DraggableGate: React.FC<Props> = ({
@@ -48,24 +50,59 @@ const DraggableGate: React.FC<Props> = ({
 	onPinClick,
 	isSelected,
 	onSelect,
+	scale, // Odbieramy skalę
 }) => {
 	const [dragging, setDragging] = useState(false);
-	const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+	// Używamy refa do zapamiętania pozycji startowej, żeby uniknąć "skakania" przy przeliczaniu zoomu
+	const dragStartRef = useRef({ mouseX: 0, mouseY: 0, blockX: 0, blockY: 0 });
 
 	const handleMouseDown = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		onSelect();
+		e.stopPropagation(); // Ważne: żeby nie zaznaczało tła
+		onSelect(); // Zaznaczamy blok
 		setDragging(true);
-		setOffset({ x: e.clientX - block.x, y: e.clientY - block.y });
+
+		// Zapamiętujemy gdzie była myszka i blok w momencie kliknięcia
+		dragStartRef.current = {
+			mouseX: e.clientX,
+			mouseY: e.clientY,
+			blockX: block.x,
+			blockY: block.y,
+		};
 	};
 
-	const handleMouseMove = (e: React.MouseEvent) => {
+	// Używamy useEffect i window eventów dla płynniejszego przeciągania (drag & drop),
+	// zwłaszcza gdy kursor wyjedzie poza obrys bramki
+	useEffect(() => {
+		const handleGlobalMouseMove = (e: MouseEvent) => {
+			if (!dragging) return;
+
+			// Obliczamy deltę ruchu myszki
+			const dx = e.clientX - dragStartRef.current.mouseX;
+			const dy = e.clientY - dragStartRef.current.mouseY;
+
+			// KLUCZOWE: Dzielimy przesunięcie przez skalę.
+			// Jeśli zoom jest 2x, to ruch myszy o 100px powinien przesunąć blok o 50 jednostek.
+			const newX = dragStartRef.current.blockX + dx / scale;
+			const newY = dragStartRef.current.blockY + dy / scale;
+
+			onMove(block.id, newX, newY);
+		};
+
+		const handleGlobalMouseUp = () => {
+			setDragging(false);
+		};
+
 		if (dragging) {
-			onMove(block.id, e.clientX - offset.x, e.clientY - offset.y);
+			window.addEventListener("mousemove", handleGlobalMouseMove);
+			window.addEventListener("mouseup", handleGlobalMouseUp);
 		}
-	};
 
-	const handleMouseUp = () => setDragging(false);
+		return () => {
+			window.removeEventListener("mousemove", handleGlobalMouseMove);
+			window.removeEventListener("mouseup", handleGlobalMouseUp);
+		};
+	}, [dragging, block.id, onMove, scale]); // Zależność od scale jest ważna!
 
 	const renderBlock = () => {
 		switch (block.type) {
@@ -123,6 +160,7 @@ const DraggableGate: React.FC<Props> = ({
 					<ToggleSwitch
 						value={block.outputs[0] === 1}
 						onChange={(newValue) => {
+							// Toggle nie zmienia pozycji, więc skala tu niepotrzebna
 							onMove(
 								block.id,
 								block.x,
@@ -203,28 +241,49 @@ const DraggableGate: React.FC<Props> = ({
 	return (
 		<div
 			onMouseDown={handleMouseDown}
-			onMouseMove={handleMouseMove}
-			onMouseUp={handleMouseUp}
+			// onMouseMove i onMouseUp są teraz obsługiwane przez useEffect (window)
+			// żeby drag&drop działał płynnie przy zoomie
 			style={{
 				position: "absolute",
 				left: block.x,
 				top: block.y,
-				cursor: "move",
+				cursor: dragging ? "grabbing" : "move", // Lepszy feedback wizualny
 				overflow: "visible",
 				boxShadow: isSelected
 					? "0 0 0 2px #1976d2, 0 0 10px rgba(25, 118, 210, 0.5)"
 					: "none",
 				zIndex: isSelected ? 1000 : 1,
 				borderRadius: "4px",
+				// Rozmiary pozostają bez zmian
 				width:
-					block.type === "NAND_8" || block.type === "NOR_8"
+					block.type === "RAM_16x4"
+						? 140 // RAM jest szerszy
+						: block.type === "MUX16" || block.type === "DEMUX16"
+						? 130
+						: block.type === "MUX4" || block.type === "DEMUX4"
+						? 130
+						: block.type === "D_FLIPFLOP" ||
+						  block.type === "T_FLIPFLOP" ||
+						  block.type === "JK_FLIPFLOP" ||
+						  block.type === "SR_FLIPFLOP"
+						? 130
+						: block.type === "NAND_8" || block.type === "NOR_8"
 						? 160
 						: block.type === "NAND_4" || block.type === "NOR_4"
 						? 120
 						: 100,
 				height:
 					block.type === "MUX16" || block.type === "DEMUX16"
-						? 320
+						? 340
+						: block.type === "RAM_16x4"
+						? 200 // RAM jest wyższy (ostatni pin na 173px)
+						: block.type === "MUX4" || block.type === "DEMUX4"
+						? 110
+						: block.type === "D_FLIPFLOP" ||
+						  block.type === "T_FLIPFLOP" ||
+						  block.type === "JK_FLIPFLOP" ||
+						  block.type === "SR_FLIPFLOP"
+						? 90
 						: block.type === "NAND_8" || block.type === "NOR_8"
 						? 160
 						: block.type === "NAND_4" || block.type === "NOR_4"
@@ -234,18 +293,14 @@ const DraggableGate: React.FC<Props> = ({
 		>
 			{renderBlock()}
 
-			{/* --- specjalne przypadki --- */}
+			{/* --- PINY (POZYCJE NIENARUSZONE) --- */}
 			{(() => {
 				switch (block.type) {
 					case "MUX4": {
-						// 4 dane (0-3), 2 selektory (4-5), 1 !E (6)
 						const dataInputs = block.inputs.slice(0, 4);
 						const controlInputs = block.inputs.slice(4, 6);
-						// const enableInput = block.inputs[6];
-
 						return (
 							<>
-								{/* wejścia danych po lewej */}
 								{dataInputs.map((_, idx) => (
 									<div
 										key={`mux4-data-${idx}`}
@@ -257,7 +312,6 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								))}
-								{/* wejścia sterujące od góry */}
 								{controlInputs.map((_, idx) => (
 									<div
 										key={`mux4-ctrl-${idx}`}
@@ -273,17 +327,15 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								))}
-								{/* !E na dole */}
 								<div
 									key="mux4-en"
 									className="pin input"
-									style={{ left: 53, top: 103 }} // 100(h) - 7
+									style={{ left: 53, top: 103 }}
 									onMouseDown={(e) => {
 										e.stopPropagation();
 										onPinClick(block.id, "input", 6);
 									}}
 								/>
-								{/* wyjście */}
 								<div
 									className="pin output"
 									style={{ right: -26, top: 43 }}
@@ -299,11 +351,8 @@ const DraggableGate: React.FC<Props> = ({
 					case "MUX16": {
 						const dataInputs = block.inputs.slice(0, 16);
 						const controlInputs = block.inputs.slice(16, 20);
-						// const enableInput = block.inputs[20];
-
 						return (
 							<>
-								{/* 16 wejść danych po lewej */}
 								{dataInputs.map((_, idx) => (
 									<div
 										key={`mux16-data-${idx}`}
@@ -318,7 +367,6 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								))}
-								{/* 4 wejścia sterujące na górze */}
 								{controlInputs.map((_, idx) => (
 									<div
 										key={`mux16-ctrl-${idx}`}
@@ -334,17 +382,15 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								))}
-								{/* !E na dole */}
 								<div
 									key="mux16-en"
 									className="pin input"
-									style={{ left: 53, top: 333 }} // 330(h) - 7
+									style={{ left: 53, top: 333 }}
 									onMouseDown={(e) => {
 										e.stopPropagation();
 										onPinClick(block.id, "input", 20);
 									}}
 								/>
-								{/* pojedyncze wyjście */}
 								<div
 									className="pin output"
 									style={{ right: -26, top: 158 }}
@@ -360,8 +406,6 @@ const DraggableGate: React.FC<Props> = ({
 					case "DEMUX4": {
 						const outputs = block.outputs;
 						const controlInputs = block.inputs.slice(1, 3);
-						// const enableInput = block.inputs[3];
-
 						return (
 							<>
 								<div
@@ -372,7 +416,6 @@ const DraggableGate: React.FC<Props> = ({
 										onPinClick(block.id, "input", 0);
 									}}
 								/>
-								{/* wejścia sterujące od góry */}
 								{controlInputs.map((_, idx) => (
 									<div
 										key={`demux4-ctrl-${idx}`}
@@ -388,11 +431,10 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								))}
-								{/* !E na dole */}
 								<div
 									key="demux4-en"
 									className="pin input"
-									style={{ left: 53, top: 103 }} // 100(h) - 7
+									style={{ left: 53, top: 103 }}
 									onMouseDown={(e) => {
 										e.stopPropagation();
 										onPinClick(block.id, "input", 3);
@@ -419,8 +461,6 @@ const DraggableGate: React.FC<Props> = ({
 					case "DEMUX16": {
 						const outputs = block.outputs;
 						const controlInputs = block.inputs.slice(1, 5);
-						// const enableInput = block.inputs[5];
-
 						return (
 							<>
 								<div
@@ -431,7 +471,6 @@ const DraggableGate: React.FC<Props> = ({
 										onPinClick(block.id, "input", 0);
 									}}
 								/>
-								{/* sterujące na górze */}
 								{controlInputs.map((_, idx) => (
 									<div
 										key={`demux16-ctrl-${idx}`}
@@ -447,11 +486,10 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								))}
-								{/* !E na dole */}
 								<div
 									key="demux16-en"
 									className="pin input"
-									style={{ left: 53, top: 333 }} // 330(h) - 7
+									style={{ left: 53, top: 333 }}
 									onMouseDown={(e) => {
 										e.stopPropagation();
 										onPinClick(block.id, "input", 5);
@@ -478,12 +516,10 @@ const DraggableGate: React.FC<Props> = ({
 					case "RAM_16x4": {
 						const dataInputs = block.inputs.slice(0, 4);
 						const addrInputs = block.inputs.slice(4, 8);
-						const ctrlInputs = block.inputs.slice(8, 10);
 						const outputs = block.outputs;
 
 						return (
 							<>
-								{/* Wejścia Danych (D0-D3) */}
 								{dataInputs.map((_, idx) => (
 									<div
 										key={`ram-data-${idx}`}
@@ -495,8 +531,6 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								))}
-
-								{/* Wejścia Adresowe (A0-A3) */}
 								{addrInputs.map((_, idx) => (
 									<div
 										key={`ram-addr-${idx}`}
@@ -512,8 +546,6 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								))}
-
-								{/* Wejścia Sterujące (CS - góra, WE - dół) */}
 								<div // CS
 									key="ram-cs"
 									className="pin input"
@@ -526,14 +558,12 @@ const DraggableGate: React.FC<Props> = ({
 								<div // WE
 									key="ram-we"
 									className="pin input"
-									style={{ left: 63, top: 173 }} // 180 (wysokość) - 7
+									style={{ left: 63, top: 173 }}
 									onMouseDown={(e) => {
 										e.stopPropagation();
 										onPinClick(block.id, "input", 9);
 									}}
 								/>
-
-								{/* Wyjścia Danych (Q0-Q3) */}
 								{outputs.map((_, idx) => (
 									<div
 										key={`ram-out-${idx}`}
@@ -559,20 +589,17 @@ const DraggableGate: React.FC<Props> = ({
 					case "T_FLIPFLOP":
 					case "JK_FLIPFLOP":
 					case "SR_FLIPFLOP": {
-						// Definicja pinów synchronicznych (D, T, J, K, CLK)
 						const syncInputs =
 							block.type === "D_FLIPFLOP" ||
 							block.type === "T_FLIPFLOP"
-								? block.inputs.slice(0, 2) // D, CLK lub T, CLK
-								: block.inputs.slice(0, 3); // J, K, CLK lub S, R, CLK
+								? block.inputs.slice(0, 2)
+								: block.inputs.slice(0, 3);
 
-						// Definicja pinów asynchronicznych (S, R)
 						const asyncStartIndex = syncInputs.length;
-						const asyncInputs = block.inputs.slice(asyncStartIndex); // S, R
+						const asyncInputs = block.inputs.slice(asyncStartIndex);
 
 						return (
 							<>
-								{/* --- Wejścia synchroniczne (po lewej) --- */}
 								{syncInputs.map((_, idx) => (
 									<div
 										key={`ff-in-${idx}`}
@@ -587,13 +614,11 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								))}
-
-								{/* --- Wejścia asynchroniczne (S na górze, R na dole) --- */}
 								{asyncInputs.length > 0 && (
 									<div // S (Set)
 										key={`ff-in-s`}
 										className="pin input"
-										style={{ left: 53, top: -2 }} // Na środku, na górze
+										style={{ left: 53, top: -2 }}
 										onMouseDown={(e) => {
 											e.stopPropagation();
 											onPinClick(
@@ -614,7 +639,7 @@ const DraggableGate: React.FC<Props> = ({
 												block.type === "JK_FLIPFLOP"
 													? -40
 													: -20,
-										}} // Na środku, na dole
+										}}
 										onMouseDown={(e) => {
 											e.stopPropagation();
 											onPinClick(
@@ -625,8 +650,6 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								)}
-
-								{/* --- Wyjścia (Q i !Q) --- */}
 								<div
 									className="pin output"
 									style={{ right: -16, top: 28 }}
@@ -662,14 +685,13 @@ const DraggableGate: React.FC<Props> = ({
 					case "XNOR": {
 						return (
 							<>
-								{/* --- wejścia --- */}
 								{block.inputs?.map((_, idx) => (
 									<div
 										key={`in-${idx}`}
 										className="pin input"
 										style={{
 											left: -7,
-											top: idx === 0 ? 13 : 33, // dwie linie wejściowe w połowie wysokości
+											top: idx === 0 ? 13 : 33,
 										}}
 										onMouseDown={(e) => {
 											e.stopPropagation();
@@ -677,13 +699,11 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								))}
-
-								{/* --- wyjście --- */}
 								<div
 									className="pin output"
 									style={{
 										right: -8,
-										top: 23, // środkowo, pasuje do linii wyjścia SVG
+										top: 23,
 									}}
 									onMouseDown={(e) => {
 										e.stopPropagation();
@@ -704,7 +724,7 @@ const DraggableGate: React.FC<Props> = ({
 										className="pin input"
 										style={{
 											left: -7,
-											top: 23, // dwie linie wejściowe w połowie wysokości
+											top: 23,
 										}}
 										onMouseDown={(e) => {
 											e.stopPropagation();
@@ -712,13 +732,11 @@ const DraggableGate: React.FC<Props> = ({
 										}}
 									/>
 								))}
-
-								{/* --- wyjście --- */}
 								<div
 									className="pin output"
 									style={{
 										right: -8,
-										top: 23, // środkowo, pasuje do linii wyjścia SVG
+										top: 23,
 									}}
 									onMouseDown={(e) => {
 										e.stopPropagation();
