@@ -21,17 +21,18 @@ const NotGate: React.FC<NotGateProps> = ({ inputs = [], outputs = [] }) => {
 				strokeWidth="3"
 			/>
 
-			{/* Trójkąt bramki */}
+			{/* Kształt bramki (Trójkąt) */}
 			<polygon
-				points="20,10 80,30 20,50"
+				points="20,6 68,30 20,54"
 				fill="white"
 				stroke="#1976d2"
 				strokeWidth="2"
 			/>
 
-			{/* Kółko negacji */}
+			{/* Kółeczko negacji */}
+			{/* Szczyt trójkąta jest na x=68. Promień r=5, więc środek cx=73 */}
 			<circle
-				cx="85"
+				cx="73"
 				cy="30"
 				r="5"
 				fill="white"
@@ -40,8 +41,9 @@ const NotGate: React.FC<NotGateProps> = ({ inputs = [], outputs = [] }) => {
 			/>
 
 			{/* Linia wyjściowa */}
+			{/* Zaczyna się za kółkiem (x=78) */}
 			<line
-				x1="90"
+				x1="78"
 				y1="30"
 				x2="100"
 				y2="30"

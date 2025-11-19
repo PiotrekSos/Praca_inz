@@ -1,5 +1,11 @@
 import { useState, useRef, useEffect } from "react";
-import { ChevronDown, ChevronRight, ChevronLeft } from "lucide-react";
+import {
+	ChevronDown,
+	ChevronRight,
+	ChevronLeft,
+	Save,
+	FolderOpen,
+} from "lucide-react";
 import AndGate from "./gates/AndGate";
 import OrGate from "./gates/OrGate";
 import NotGate from "./gates/NotGate";
@@ -160,11 +166,39 @@ const ScaledPreview = ({
 };
 
 // --- Toolbox ---
-const Toolbox = ({ onAddGate }: { onAddGate: (type: string) => void }) => {
+const Toolbox = ({
+	onAddGate,
+	onSave,
+	onLoad,
+}: {
+	onAddGate: (type: string) => void;
+	onSave: () => void;
+	onLoad: (data: any) => void;
+}) => {
 	const [openCategory, setOpenCategory] = useState<string | null>("Wejścia");
 	const [collapsed, setCollapsed] = useState(false);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	const toolboxWidth = 200; // węższy toolbox
+
+	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		const file = event.target.files?.[0];
+		if (!file) return;
+
+		const reader = new FileReader();
+		reader.onload = (e) => {
+			try {
+				const content = e.target?.result as string;
+				const data = JSON.parse(content);
+				onLoad(data);
+			} catch (err) {
+				alert("Błąd podczas wczytywania pliku: " + err);
+			}
+		};
+		reader.readAsText(file);
+		// Reset inputa, żeby można było wczytać ten sam plik ponownie
+		event.target.value = "";
+	};
 
 	return (
 		<div
@@ -192,6 +226,65 @@ const Toolbox = ({ onAddGate }: { onAddGate: (type: string) => void }) => {
 						: "translateX(0)",
 				}}
 			>
+				<div
+					style={{
+						padding: "12px",
+						borderBottom: "1px solid #ddd",
+						background: "#f0f0f0",
+						display: "flex",
+						gap: "8px",
+					}}
+				>
+					<button
+						onClick={onSave}
+						title="Zapisz do pliku"
+						style={{
+							flex: 1,
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							gap: 6,
+							padding: "6px",
+							cursor: "pointer",
+							border: "1px solid #ccc",
+							borderRadius: 4,
+							background: "white",
+						}}
+					>
+						<Save size={16} />
+						<span style={{ fontSize: 12 }}>Zapisz</span>
+					</button>
+
+					<button
+						onClick={() => fileInputRef.current?.click()}
+						title="Wczytaj z pliku"
+						style={{
+							flex: 1,
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							gap: 6,
+							padding: "6px",
+							cursor: "pointer",
+							border: "1px solid #ccc",
+							borderRadius: 4,
+							background: "white",
+						}}
+					>
+						<FolderOpen size={16} />
+						<span style={{ fontSize: 12 }}>Wczytaj</span>
+					</button>
+
+					{/* Ukryty input do plików */}
+					<input
+						type="file"
+						accept=".json"
+						ref={fileInputRef}
+						style={{ display: "none" }}
+						onChange={handleFileChange}
+					/>
+				</div>
+
 				{categories.map((cat) => {
 					const open = openCategory === cat.name;
 					return (

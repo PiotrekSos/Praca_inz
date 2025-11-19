@@ -11,7 +11,7 @@ const AndGate: React.FC<AndGateProps> = ({ inputs = [], outputs = [] }) => {
 
 	return (
 		<svg width="100" height="60">
-			{/* --- linie wejściowe --- */}
+			{/* --- linie wejściowe (POZYCJE NIENARUSZONE) --- */}
 			<line
 				x1="0"
 				y1="20"
@@ -29,15 +29,14 @@ const AndGate: React.FC<AndGateProps> = ({ inputs = [], outputs = [] }) => {
 				strokeWidth="3"
 			/>
 
-			{/* --- kształt bramki AND --- */}
 			<path
-				d="M20,10 H60 A20,20 0 0,1 60,50 H20 Z"
+				d="M 20 6 H 56 A 24 24 0 0 1 56 54 H 20 Z"
 				fill="white"
 				stroke="#1976d2"
 				strokeWidth="2"
 			/>
 
-			{/* --- linia wyjściowa --- */}
+			{/* --- linia wyjściowa (POZYCJA NIENARUSZONA) --- */}
 			<line
 				x1="80"
 				y1="30"

@@ -98,6 +98,7 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 
 			{[0, 1, 2, 3].map((i) => (
 				<circle
+					key={i}
 					cx="100"
 					cy={25 + i * 18}
 					r="5"

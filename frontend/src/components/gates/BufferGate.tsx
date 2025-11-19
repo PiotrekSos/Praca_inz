@@ -24,9 +24,10 @@ const BufferGate: React.FC<BufferGateProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* Kształt bramki */}
+			{/* Kształt bramki (Trójkąt) */}
+			{/* Podstawa: x=20, wys=48px (od 6 do 54). Szczyt: x=20+48=68, y=30 */}
 			<polygon
-				points="20,10 80,30 20,50"
+				points="20,6 68,30 20,54"
 				fill="white"
 				stroke="#1976d2"
 				strokeWidth="2"
@@ -34,7 +35,7 @@ const BufferGate: React.FC<BufferGateProps> = ({
 
 			{/* Linia wyjściowa */}
 			<line
-				x1="80"
+				x1="68"
 				y1="30"
 				x2="100"
 				y2="30"

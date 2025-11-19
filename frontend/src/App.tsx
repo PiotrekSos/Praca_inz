@@ -85,7 +85,109 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					b.outputs[1] = Number(!b.state);
 					break;
 				}
-				// ... Reszta przypadków (T_FLIPFLOP, JK, MUX itp.) ...
+				case "T_FLIPFLOP": {
+					const [T, CLK, S_low, R_low] = b.inputs;
+					if (!("state" in b)) b.state = 0;
+					if (R_low === 0) b.state = 0;
+					else if (S_low === 0) b.state = 1;
+					else if (CLK === 1 && T === 1) b.state = b.state ? 0 : 1;
+					b.outputs[0] = Number(b.state);
+					b.outputs[1] = Number(!b.state);
+					break;
+				}
+				case "JK_FLIPFLOP": {
+					const [J, K, CLK, S_low, R_low] = b.inputs;
+					if (!("state" in b)) b.state = 0;
+					if (R_low === 0) b.state = 0;
+					else if (S_low === 0) b.state = 1;
+					else if (CLK === 1) {
+						if (J === 0 && K === 1) b.state = 0;
+						else if (J === 1 && K === 0) b.state = 1;
+						else if (J === 1 && K === 1) b.state = b.state ? 0 : 1;
+					}
+					b.outputs[0] = Number(b.state);
+					b.outputs[1] = Number(!b.state);
+					break;
+				}
+				case "SR_FLIPFLOP": {
+					const [S, R, CLK] = b.inputs;
+					if (S === 1 && R === 0) b.state = 1;
+					else if (S === 0 && R === 1) b.state = 0;
+					b.outputs[0] = Number(b.state);
+					b.outputs[1] = Number(!b.state);
+					break;
+				}
+				case "RAM_16x4": {
+					const dataIn = b.inputs.slice(0, 4);
+					const addressIn = b.inputs.slice(4, 8);
+					const CS_low = b.inputs[8] ?? 1;
+					const WE_low = b.inputs[9] ?? 1;
+					if (!b.memory) b.memory = new Uint8Array(16);
+					let address = 0;
+					if (addressIn[0] === 1) address |= 1;
+					if (addressIn[1] === 1) address |= 2;
+					if (addressIn[2] === 1) address |= 4;
+					if (addressIn[3] === 1) address |= 8;
+					if (CS_low === 0 && WE_low === 0) {
+						let dataNibble = 0;
+						if (dataIn[0] === 1) dataNibble |= 1;
+						if (dataIn[1] === 1) dataNibble |= 2;
+						if (dataIn[2] === 1) dataNibble |= 4;
+						if (dataIn[3] === 1) dataNibble |= 8;
+						b.memory[address] = dataNibble;
+						b.outputs.fill(1);
+					} else if (CS_low === 0 && WE_low === 1) {
+						const dataNibble = b.memory[address];
+						b.outputs[0] = (dataNibble >> 0) & 1 ? 0 : 1;
+						b.outputs[1] = (dataNibble >> 1) & 1 ? 0 : 1;
+						b.outputs[2] = (dataNibble >> 2) & 1 ? 0 : 1;
+						b.outputs[3] = (dataNibble >> 3) & 1 ? 0 : 1;
+					} else {
+						b.outputs.fill(1);
+					}
+					break;
+				}
+				case "MUX4": {
+					const dataInputs = b.inputs.slice(0, 4);
+					const selectBits = b.inputs.slice(4, 6);
+					const E_low = b.inputs[6] ?? 1;
+					if (E_low === 0) {
+						const sel = (selectBits[0] << 1) | selectBits[1];
+						const selectedValue = dataInputs[sel] ?? 0;
+						b.outputs[0] = selectedValue === 1 ? 0 : 1;
+					} else {
+						b.outputs[0] = 1;
+					}
+					break;
+				}
+				case "MUX16": {
+					const dataInputs = b.inputs.slice(0, 16);
+					const selectBits = b.inputs.slice(16, 20);
+					const E_low = b.inputs[20] ?? 1;
+					if (E_low === 0) {
+						const sel =
+							(selectBits[0] << 3) |
+							(selectBits[1] << 2) |
+							(selectBits[2] << 1) |
+							selectBits[3];
+						const selectedValue = dataInputs[sel] ?? 0;
+						b.outputs[0] = selectedValue === 1 ? 0 : 1;
+					} else {
+						b.outputs[0] = 1;
+					}
+					break;
+				}
+				case "DEMUX4": {
+					const IN = b.inputs[0];
+					const selectBits = b.inputs.slice(1, 3);
+					const E_low = b.inputs[3] ?? 1;
+					b.outputs = [1, 1, 1, 1];
+					if (E_low === 0) {
+						const sel = (selectBits[0] << 1) | selectBits[1];
+						b.outputs[sel] = IN === 1 ? 0 : 1;
+					}
+					break;
+				}
 				case "DEMUX16": {
 					const IN = b.inputs[0];
 					const selectBits = b.inputs.slice(1, 5);
@@ -428,6 +530,89 @@ function App() {
 	const [isPanning, setIsPanning] = useState(false);
 
 	useEffect(() => {
+		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+			// Wyświetlaj ostrzeżenie tylko, jeśli coś jest na planszy
+			if (blocks.length > 0) {
+				e.preventDefault();
+				e.returnValue = "";
+				return "";
+			}
+		};
+
+		window.addEventListener("beforeunload", handleBeforeUnload);
+
+		return () => {
+			window.removeEventListener("beforeunload", handleBeforeUnload);
+		};
+	}, [blocks]);
+
+	const handleSave = () => {
+		const data = {
+			version: "1.0",
+			blocks: blocks,
+			connections: connections,
+			// Możemy zapisać też viewport, żeby użytkownik wrócił w to samo miejsce
+			viewport: viewport,
+		};
+
+		const jsonString = JSON.stringify(data, null, 2); // Pretty print
+		const blob = new Blob([jsonString], { type: "application/json" });
+		const url = URL.createObjectURL(blob);
+
+		const link = document.createElement("a");
+		link.href = url;
+		link.download = "uklad_logiczny.json";
+		document.body.appendChild(link);
+		link.click();
+
+		document.body.removeChild(link);
+		URL.revokeObjectURL(url);
+	};
+
+	// --- NOWOŚĆ: ODCZYT (LOAD) ---
+	const handleLoad = (data: any) => {
+		if (!data || typeof data !== "object") {
+			alert("Nieprawidłowy format pliku!");
+			return;
+		}
+
+		// Prosta walidacja
+		if (!Array.isArray(data.blocks) || !Array.isArray(data.connections)) {
+			alert("Plik nie zawiera wymaganych danych (blocks/connections).");
+			return;
+		}
+
+		const restoredBlocks = data.blocks.map((b: any) => {
+			// Odtwarzanie pamięci RAM z JSON-a (gdzie zapisuje się jako obiekt {0: x, 1: y...})
+			if (b.type === "RAM_16x4" && b.memory) {
+				const mem = new Uint8Array(16);
+				// JSON stringify zamienia Uint8Array na obiekt z kluczami numerycznymi
+				for (let i = 0; i < 16; i++) {
+					mem[i] = b.memory[i] || 0;
+				}
+				return { ...b, memory: mem };
+			}
+			return b;
+		});
+
+		const evaluatedBlocks = evaluateCircuit(
+			restoredBlocks,
+			data.connections
+		);
+
+		setBlocks(evaluatedBlocks);
+		setConnections(data.connections);
+
+		if (data.viewport) {
+			setViewport(data.viewport);
+		}
+
+		// Reset wyboru i pending
+		setSelection(null);
+		setPending({ from: null });
+	};
+
+	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if ((e.key === "Delete" || e.key === "Backspace") && selection) {
 				if (selection.type === "block") {
@@ -618,7 +803,11 @@ function App() {
 
 	return (
 		<div style={{ display: "flex", height: "100vh" }}>
-			<Toolbox onAddGate={handleAddBlock} />
+			<Toolbox
+				onAddGate={handleAddBlock}
+				onSave={handleSave}
+				onLoad={handleLoad}
+			/>
 
 			<div
 				style={{
