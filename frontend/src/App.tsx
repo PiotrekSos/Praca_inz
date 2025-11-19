@@ -3,6 +3,7 @@ import Toolbox from "./components/Toolbox";
 import DraggableGate from "./components/DraggableGate";
 import type { Block, Connection, BlockType } from "./types.ts";
 import { getInputPinPosition, getOutputPinPosition } from "./pinPositions";
+import { toPng } from "html-to-image";
 
 type Selection =
 	| { type: "block"; id: number }
@@ -517,6 +518,14 @@ function EditableWire({
 	);
 }
 
+const getBlockDimensions = (type: BlockType) => {
+	if (type === "RAM_16x4") return { w: 140, h: 200 };
+	if (type === "MUX16" || type === "DEMUX16") return { w: 100, h: 320 };
+	if (type === "NAND_8" || type === "NOR_8") return { w: 160, h: 160 };
+	if (type === "NAND_4" || type === "NOR_4") return { w: 120, h: 100 };
+	return { w: 100, h: 60 }; // Domyślne
+};
+
 function App() {
 	const [blocks, setBlocks] = useState<Block[]>([]);
 	const [connections, setConnections] = useState<Connection[]>([]);
@@ -610,6 +619,82 @@ function App() {
 		// Reset wyboru i pending
 		setSelection(null);
 		setPending({ from: null });
+	};
+
+	const handleExportImage = async () => {
+		if (blocks.length === 0) {
+			alert("Plansza jest pusta!");
+			return;
+		}
+
+		// 1. Obliczanie Bounding Box (Granic układu)
+		let minX = Infinity;
+		let minY = Infinity;
+		let maxX = -Infinity;
+		let maxY = -Infinity;
+
+		// Sprawdź granice bloków
+		blocks.forEach((b) => {
+			const { w, h } = getBlockDimensions(b.type);
+			if (b.x < minX) minX = b.x;
+			if (b.y < minY) minY = b.y;
+			if (b.x + w > maxX) maxX = b.x + w;
+			if (b.y + h > maxY) maxY = b.y + h;
+		});
+
+		// Sprawdź granice punktów połączeń (jeśli istnieją niestandardowe punkty)
+		connections.forEach((c) => {
+			if (c.points) {
+				c.points.forEach((p) => {
+					if (p.x < minX) minX = p.x;
+					if (p.y < minY) minY = p.y;
+					if (p.x > maxX) maxX = p.x;
+					if (p.y > maxY) maxY = p.y;
+				});
+			}
+		});
+
+		// Dodaj margines 10px z każdej strony
+		const padding = 10;
+		minX -= padding;
+		minY -= padding;
+		maxX += padding;
+		maxY += padding;
+
+		const width = maxX - minX;
+		const height = maxY - minY;
+
+		// Pobierz element DOM zawierający układ
+		const node = document.getElementById("circuit-board");
+		if (!node) return;
+
+		try {
+			// Generowanie obrazka
+			const dataUrl = await toPng(node, {
+				width: width,
+				height: height,
+				// KLUCZOWE: Ustawiamy styl transformacji tak, aby przesunąć
+				// lewy górny róg wyciętego obszaru do punktu (0,0) obrazka.
+				// Resetujemy też skalę do 1, aby jakość była idealna (niezależna od zoomu).
+				style: {
+					transform: `translate(${-minX}px, ${-minY}px) scale(1)`,
+					transformOrigin: "top left",
+					width: "100%", // Ważne, żeby kontener nie ucinał
+					height: "100%",
+				},
+				// Opcjonalnie: białe tło (domyślnie przezroczyste)
+				backgroundColor: "#f0f0f0",
+			});
+
+			// Pobieranie
+			const link = document.createElement("a");
+			link.download = "uklad_logiczny.png";
+			link.href = dataUrl;
+			link.click();
+		} catch (err) {
+			console.error("Błąd eksportu:", err);
+			alert("Nie udało się wygenerować zdjęcia.");
+		}
 	};
 
 	useEffect(() => {
@@ -807,6 +892,7 @@ function App() {
 				onAddGate={handleAddBlock}
 				onSave={handleSave}
 				onLoad={handleLoad}
+				onExport={handleExportImage}
 			/>
 
 			<div
@@ -818,7 +904,6 @@ function App() {
 					cursor: isPanning ? "grabbing" : "default",
 				}}
 				onContextMenu={(e) => e.preventDefault()}
-				// --- DODANO OBSŁUGĘ KÓŁKA ---
 				onWheel={handleWheel}
 				onMouseDown={(e) => {
 					if (e.button === 2) {
@@ -831,32 +916,31 @@ function App() {
 				onMouseMove={(e) => {
 					if (isPanning) {
 						setViewport((prev) => ({
-							...prev, // zachowujemy scale
+							...prev,
 							x: prev.x + e.movementX,
 							y: prev.y + e.movementY,
 						}));
 					}
 				}}
-				onMouseUp={() => {
-					setIsPanning(false);
-				}}
-				onMouseLeave={() => {
-					setIsPanning(false);
-				}}
+				onMouseUp={() => setIsPanning(false)}
+				onMouseLeave={() => setIsPanning(false)}
 			>
+				{/* --- TUTAJ JEST KLUCZOWA ZMIANA --- */}
+				{/* Ten div musi obejmować wszystko co ma być na zdjęciu */}
 				<div
+					id="circuit-board" // <--- ID MUSI BYĆ TUTAJ (na kontenerze z transform)
 					style={{
 						position: "absolute",
 						top: 0,
 						left: 0,
 						width: "100%",
 						height: "100%",
-						// --- DODANO SCALE DO TRANSFORMA ---
 						transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.scale})`,
 						transformOrigin: "0 0",
 						pointerEvents: "none",
 					}}
 				>
+					{/* SVG z liniami (Wewnątrz circuit-board) */}
 					<svg
 						style={{
 							position: "absolute",
@@ -900,7 +984,6 @@ function App() {
 									to={to}
 									isHigh={isHigh}
 									isSelected={isSelected}
-									// --- PRZEKAZANIE SKALI DO KABLA ---
 									scale={viewport.scale}
 									onSelect={() =>
 										setSelection({
@@ -908,7 +991,7 @@ function App() {
 											index: i,
 										})
 									}
-									onChange={(newPoints) => {
+									onChange={(newPoints: any) => {
 										setConnections((prev) =>
 											prev.map((conn, idx) =>
 												idx === i
@@ -925,6 +1008,7 @@ function App() {
 						})}
 					</svg>
 
+					{/* Bramki (Wewnątrz circuit-board) */}
 					{blocks.map((b) => (
 						<div key={b.id} style={{ pointerEvents: "all" }}>
 							<DraggableGate
@@ -938,7 +1022,6 @@ function App() {
 								onSelect={() =>
 									setSelection({ type: "block", id: b.id })
 								}
-								// --- PRZEKAZANIE SKALI DO BRAMKI ---
 								scale={viewport.scale}
 							/>
 						</div>

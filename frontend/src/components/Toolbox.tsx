@@ -5,6 +5,7 @@ import {
 	ChevronLeft,
 	Save,
 	FolderOpen,
+	Camera,
 } from "lucide-react";
 import AndGate from "./gates/AndGate";
 import OrGate from "./gates/OrGate";
@@ -170,10 +171,12 @@ const Toolbox = ({
 	onAddGate,
 	onSave,
 	onLoad,
+	onExport,
 }: {
 	onAddGate: (type: string) => void;
 	onSave: () => void;
 	onLoad: (data: any) => void;
+	onExport: () => void;
 }) => {
 	const [openCategory, setOpenCategory] = useState<string | null>("Wejścia");
 	const [collapsed, setCollapsed] = useState(false);
@@ -274,6 +277,33 @@ const Toolbox = ({
 						<FolderOpen size={16} />
 						<span style={{ fontSize: 12 }}>Wczytaj</span>
 					</button>
+
+					<button
+						onClick={onExport}
+						title="Eksportuj do PNG"
+						style={{
+							flex: 1,
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							gap: 6,
+							padding: "6px",
+							cursor: "pointer",
+							border: "1px solid #ccc",
+							borderRadius: 4,
+							background: "white",
+						}}
+					>
+						<Camera size={16} />
+					</button>
+
+					<input
+						type="file"
+						accept=".json"
+						ref={fileInputRef}
+						style={{ display: "none" }}
+						onChange={handleFileChange}
+					/>
 
 					{/* Ukryty input do plików */}
 					<input
