@@ -3,11 +3,17 @@ import React from "react";
 interface XnorGateProps {
 	inputs?: number[];
 	outputs?: number[];
+	showColors?: boolean;
 }
 
-const XnorGate: React.FC<XnorGateProps> = ({ inputs = [], outputs = [] }) => {
-	const inputColors = inputs.map((v) => (v === 1 ? "green" : "#1976d2"));
-	const outputColor = outputs[0] === 1 ? "green" : "#1976d2";
+const XnorGate: React.FC<XnorGateProps> = ({
+	inputs = [],
+	outputs = [],
+	showColors = true,
+}) => {
+	const getColor = (val: number | undefined) =>
+		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
+	const bodyColor = showColors ? "#1976d2" : "black";
 
 	return (
 		<svg width="100" height="60">
@@ -17,7 +23,7 @@ const XnorGate: React.FC<XnorGateProps> = ({ inputs = [], outputs = [] }) => {
 				y1="20"
 				x2="18"
 				y2="20"
-				stroke={inputColors[0] || "#1976d2"}
+				stroke={getColor(inputs[0])}
 				strokeWidth="3"
 			/>
 			<line
@@ -25,7 +31,7 @@ const XnorGate: React.FC<XnorGateProps> = ({ inputs = [], outputs = [] }) => {
 				y1="40"
 				x2="18"
 				y2="40"
-				stroke={inputColors[1] || "#1976d2"}
+				stroke={getColor(inputs[1])}
 				strokeWidth="3"
 			/>
 
@@ -33,7 +39,7 @@ const XnorGate: React.FC<XnorGateProps> = ({ inputs = [], outputs = [] }) => {
 			<path
 				d="M 10 6 Q 34 30 10 54"
 				fill="none"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -41,7 +47,7 @@ const XnorGate: React.FC<XnorGateProps> = ({ inputs = [], outputs = [] }) => {
 			<path
 				d="M 20 6 H 38 A 48 48 0 0 1 80 30 A 48 48 0 0 1 38 54 H 20 Q 44 30 20 6 Z"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -51,7 +57,7 @@ const XnorGate: React.FC<XnorGateProps> = ({ inputs = [], outputs = [] }) => {
 				cy="30"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -61,7 +67,7 @@ const XnorGate: React.FC<XnorGateProps> = ({ inputs = [], outputs = [] }) => {
 				y1="30"
 				x2="100"
 				y2="30"
-				stroke={outputColor}
+				stroke={getColor(outputs[0])}
 				strokeWidth="3"
 			/>
 		</svg>

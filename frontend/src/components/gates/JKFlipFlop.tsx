@@ -3,11 +3,18 @@ import React from "react";
 interface FlipFlopProps {
 	inputs?: number[];
 	outputs?: number[];
+	showColors?: boolean;
 }
 
-const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
-	const inputColors = inputs.map((v) => (v === 1 ? "green" : "#1976d2"));
-	const outputColors = outputs.map((v) => (v === 1 ? "green" : "#1976d2"));
+const JKFlipFlop: React.FC<FlipFlopProps> = ({
+	inputs = [],
+	outputs = [],
+	showColors = true,
+}) => {
+	const getColor = (val: number | undefined) =>
+		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
+	const bodyColor = showColors ? "#1976d2" : "black";
+	const clockColor = showColors ? "#555" : "black";
 
 	return (
 		<svg width="120" height="100">
@@ -17,7 +24,7 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="35"
 				x2="30"
 				y2="35"
-				stroke={inputColors[0] || "#1976d2"}
+				stroke={getColor(inputs[0])}
 				strokeWidth="3"
 			/>
 			<line
@@ -25,7 +32,7 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="50"
 				x2="30"
 				y2="50"
-				stroke={inputColors[1] || "#1976d2"}
+				stroke={getColor(inputs[1])}
 				strokeWidth="3"
 			/>
 			<line
@@ -33,7 +40,7 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="65"
 				x2="30"
 				y2="65"
-				stroke={inputColors[2] || "#1976d2"}
+				stroke={getColor(inputs[2])}
 				strokeWidth="3"
 			/>
 
@@ -44,19 +51,37 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				width="60"
 				height="60"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 				rx="6"
 			/>
 
 			{/* Etykiety wejść */}
-			<text x="35" y="35" fontSize="12" fill="#1976d2">
+			<text
+				x="35"
+				y="35"
+				fontSize="12"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				J
 			</text>
-			<text x="35" y="50" fontSize="12" fill="#1976d2">
+			<text
+				x="35"
+				y="50"
+				fontSize="12"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				K
 			</text>
-			<text x="35" y="65" fontSize="10" fill="#555">
+			<text
+				x="35"
+				y="65"
+				fontSize="10"
+				fill={clockColor}
+				style={{ userSelect: "none" }}
+			>
 				CLK
 			</text>
 
@@ -66,7 +91,7 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="35"
 				x2="110"
 				y2="35"
-				stroke={outputColors[0] || "#1976d2"}
+				stroke={getColor(outputs[0])}
 				strokeWidth="3"
 			/>
 			<line
@@ -74,7 +99,7 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="65"
 				x2="110"
 				y2="65"
-				stroke={outputColors[1] || "#1976d2"}
+				stroke={getColor(outputs[1])}
 				strokeWidth="3"
 			/>
 
@@ -83,7 +108,7 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="5"
 				x2="60"
 				y2="20"
-				stroke={inputColors[3] || "#1976d2"} // S
+				stroke={getColor(inputs[3])}
 				strokeWidth="3"
 			/>
 			<line
@@ -91,7 +116,7 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="95"
 				x2="60"
 				y2="80"
-				stroke={inputColors[4] || "#1976d2"} // R
+				stroke={getColor(inputs[4])}
 				strokeWidth="3"
 			/>
 
@@ -100,7 +125,7 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				cy="15"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="1.5"
 			/>
 			<circle
@@ -108,21 +133,45 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				cy="85"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="1.5"
 			/>
 
 			{/* Etykiety wyjść */}
-			<text x="78" y="35" fontSize="12" fill="#1976d2">
+			<text
+				x="78"
+				y="35"
+				fontSize="12"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				Q
 			</text>
-			<text x="73" y="65" fontSize="12" fill="#1976d2">
+			<text
+				x="73"
+				y="65"
+				fontSize="12"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				!Q
 			</text>
-			<text x="58" y="30" fontSize="10" fill="#1976d2">
+			<text
+				x="58"
+				y="30"
+				fontSize="10"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				!S
 			</text>
-			<text x="58" y="75" fontSize="10" fill="#1976d2">
+			<text
+				x="58"
+				y="75"
+				fontSize="10"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				!R
 			</text>
 
@@ -131,7 +180,7 @@ const JKFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				cy="65"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="1.5"
 			/>
 		</svg>

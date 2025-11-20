@@ -3,11 +3,17 @@ import React from "react";
 interface NandGate8Props {
 	inputs?: number[];
 	outputs?: number[];
+	showColors?: boolean; // <-- Nowy prop
 }
 
-const NandGate8: React.FC<NandGate8Props> = ({ inputs = [], outputs = [] }) => {
-	const inputColors = inputs.map((v) => (v === 1 ? "green" : "#1976d2"));
-	const outputColor = outputs[0] === 1 ? "green" : "#1976d2";
+const NandGate8: React.FC<NandGate8Props> = ({
+	inputs = [],
+	outputs = [],
+	showColors = true,
+}) => {
+	const getColor = (val: number | undefined) =>
+		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
+	const bodyColor = showColors ? "#1976d2" : "black";
 
 	return (
 		<svg width="160" height="160">
@@ -19,7 +25,7 @@ const NandGate8: React.FC<NandGate8Props> = ({ inputs = [], outputs = [] }) => {
 					y1={28 + i * 15}
 					x2="25"
 					y2={28 + i * 15}
-					stroke={inputColors[i] || "#1976d2"}
+					stroke={getColor(inputs[i])}
 					strokeWidth="3"
 				/>
 			))}
@@ -28,7 +34,7 @@ const NandGate8: React.FC<NandGate8Props> = ({ inputs = [], outputs = [] }) => {
 			<path
 				d="M25,20 H65 A40,40 0 0,1 65,140 H25 Z"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -38,7 +44,7 @@ const NandGate8: React.FC<NandGate8Props> = ({ inputs = [], outputs = [] }) => {
 				cy="80"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -48,7 +54,7 @@ const NandGate8: React.FC<NandGate8Props> = ({ inputs = [], outputs = [] }) => {
 				y1="80"
 				x2="160"
 				y2="80"
-				stroke={outputColor}
+				stroke={getColor(outputs[0])}
 				strokeWidth="3"
 			/>
 		</svg>

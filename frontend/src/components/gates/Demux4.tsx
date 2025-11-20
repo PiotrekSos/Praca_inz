@@ -3,11 +3,19 @@ import React from "react";
 interface GateProps {
 	inputs?: number[];
 	outputs?: number[];
+	showColors?: boolean; // <-- Nowy prop
 }
 
-const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
-	const inputColors = inputs.map((v) => (v === 1 ? "green" : "#1976d2"));
-	const outputColors = outputs.map((v) => (v === 1 ? "green" : "#1976d2"));
+const Demux4: React.FC<GateProps> = ({
+	inputs = [],
+	outputs = [],
+	showColors = true,
+}) => {
+	// Logika kolorów: Jeśli showColors=false -> zawsze czarny.
+	const getColor = (val: number | undefined) =>
+		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
+
+	const bodyColor = showColors ? "#1976d2" : "black";
 
 	return (
 		<svg width="120" height="110">
@@ -17,7 +25,7 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				width="70"
 				height="80"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 				rx="6"
 			/>
@@ -28,19 +36,27 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				y1="50"
 				x2="25"
 				y2="50"
-				stroke={inputColors[0] || "#1976d2"}
+				stroke={getColor(inputs[0])}
 				strokeWidth="3"
 			/>
-			<text x="30" y="53" fontSize="10" fill="#1976d2" fontWeight="bold">
+			<text
+				x="30"
+				y="53"
+				fontSize="10"
+				fill={bodyColor}
+				fontWeight="bold"
+				style={{ userSelect: "none" }}
+			>
 				D
 			</text>
 
+			{/* Wejścia sterujące */}
 			<line
 				x1="50"
 				y1="0"
 				x2="50"
 				y2="10"
-				stroke={inputColors[1] || "#1976d2"}
+				stroke={getColor(inputs[1])}
 				strokeWidth="3"
 			/>
 			<line
@@ -48,7 +64,7 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				y1="0"
 				x2="70"
 				y2="10"
-				stroke={inputColors[2] || "#1976d2"}
+				stroke={getColor(inputs[2])}
 				strokeWidth="3"
 			/>
 
@@ -58,7 +74,7 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				y1="110"
 				x2="60"
 				y2="90"
-				stroke={inputColors[3] || "#1976d2"}
+				stroke={getColor(inputs[3])}
 				strokeWidth="3"
 			/>
 			<circle
@@ -66,7 +82,7 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				cy="95"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -78,7 +94,7 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 					y1={25 + i * 18}
 					x2="120"
 					y2={25 + i * 18}
-					stroke={outputColors[i] || "#1976d2"}
+					stroke={getColor(outputs[i])}
 					strokeWidth="3"
 				/>
 			))}
@@ -89,8 +105,9 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 					x="85"
 					y={28 + i * 18}
 					fontSize="10"
-					fill="#1976d2"
+					fill={bodyColor}
 					fontWeight="bold"
+					style={{ userSelect: "none" }}
 				>
 					!{i}
 				</text>
@@ -103,19 +120,37 @@ const Demux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 					cy={25 + i * 18}
 					r="5"
 					fill="white"
-					stroke="#1976d2"
+					stroke={bodyColor}
 					strokeWidth="2"
 				/>
 			))}
 
 			{/* Wejścia adresowe */}
-			<text x="45" y="20" fontSize="9" fill="#1976d2">
+			<text
+				x="45"
+				y="20"
+				fontSize="9"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				A0
 			</text>
-			<text x="65" y="20" fontSize="9" fill="#1976d2">
+			<text
+				x="65"
+				y="20"
+				fontSize="9"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				A1
 			</text>
-			<text x="55" y="88" fontSize="9" fill="#1976d2">
+			<text
+				x="55"
+				y="88"
+				fontSize="9"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				!E
 			</text>
 		</svg>

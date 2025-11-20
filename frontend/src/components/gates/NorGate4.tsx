@@ -3,20 +3,27 @@ import React from "react";
 interface NorGate4Props {
 	inputs?: number[];
 	outputs?: number[];
+	showColors?: boolean; // <-- Nowy prop
 }
 
-const NorGate4: React.FC<NorGate4Props> = ({ inputs = [], outputs = [] }) => {
-	const inputColors = inputs.map((v) => (v === 1 ? "green" : "#1976d2"));
-	const outputColor = outputs[0] === 1 ? "green" : "#1976d2";
+const NorGate4: React.FC<NorGate4Props> = ({
+	inputs = [],
+	outputs = [],
+	showColors = true,
+}) => {
+	const getColor = (val: number | undefined) =>
+		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
+	const bodyColor = showColors ? "#1976d2" : "black";
 
 	return (
 		<svg width="140" height="100">
+			{/* Linie wejściowe */}
 			<line
 				x1="0"
 				y1="25"
 				x2="35"
 				y2="25"
-				stroke={inputColors[0] || "#1976d2"}
+				stroke={getColor(inputs[0])}
 				strokeWidth="3"
 			/>
 			<line
@@ -24,7 +31,7 @@ const NorGate4: React.FC<NorGate4Props> = ({ inputs = [], outputs = [] }) => {
 				y1="42"
 				x2="48"
 				y2="42"
-				stroke={inputColors[1] || "#1976d2"}
+				stroke={getColor(inputs[1])}
 				strokeWidth="3"
 			/>
 			<line
@@ -32,7 +39,7 @@ const NorGate4: React.FC<NorGate4Props> = ({ inputs = [], outputs = [] }) => {
 				y1="59"
 				x2="48"
 				y2="59"
-				stroke={inputColors[2] || "#1976d2"}
+				stroke={getColor(inputs[2])}
 				strokeWidth="3"
 			/>
 			<line
@@ -40,7 +47,7 @@ const NorGate4: React.FC<NorGate4Props> = ({ inputs = [], outputs = [] }) => {
 				y1="76"
 				x2="35"
 				y2="76"
-				stroke={inputColors[3] || "#1976d2"}
+				stroke={getColor(inputs[3])}
 				strokeWidth="3"
 			/>
 
@@ -48,7 +55,7 @@ const NorGate4: React.FC<NorGate4Props> = ({ inputs = [], outputs = [] }) => {
 			<path
 				d="M30,20 Q70,50 30,80 Q80,80 100,50 Q80,20 30,20 Z"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -58,7 +65,7 @@ const NorGate4: React.FC<NorGate4Props> = ({ inputs = [], outputs = [] }) => {
 				cy="50"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -68,7 +75,7 @@ const NorGate4: React.FC<NorGate4Props> = ({ inputs = [], outputs = [] }) => {
 				y1="50"
 				x2="120"
 				y2="50"
-				stroke={outputColor}
+				stroke={getColor(outputs[0])}
 				strokeWidth="3"
 			/>
 		</svg>

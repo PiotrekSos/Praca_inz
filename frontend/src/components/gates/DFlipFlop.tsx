@@ -3,11 +3,19 @@ import React from "react";
 interface FlipFlopProps {
 	inputs?: number[];
 	outputs?: number[];
+	showColors?: boolean; // <-- Nowy prop
 }
 
-const DFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
-	const inputColors = inputs.map((v) => (v === 1 ? "green" : "#1976d2"));
-	const outputColors = outputs.map((v) => (v === 1 ? "green" : "#1976d2"));
+const DFlipFlop: React.FC<FlipFlopProps> = ({
+	inputs = [],
+	outputs = [],
+	showColors = true,
+}) => {
+	// Funkcja pomocnicza
+	const getColor = (val: number | undefined) =>
+		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
+	const bodyColor = showColors ? "#1976d2" : "black";
+	const clockColor = showColors ? "#555" : "black";
 
 	return (
 		<svg width="120" height="80">
@@ -17,7 +25,7 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="35"
 				x2="30"
 				y2="35"
-				stroke={inputColors[0] || "#1976d2"}
+				stroke={getColor(inputs[0])}
 				strokeWidth="3"
 			/>
 			<line
@@ -25,7 +33,7 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="50"
 				x2="30"
 				y2="50"
-				stroke={inputColors[1] || "#1976d2"}
+				stroke={getColor(inputs[1])}
 				strokeWidth="3"
 			/>
 
@@ -34,7 +42,7 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="5"
 				x2="60"
 				y2="20"
-				stroke={inputColors[2] || "#1976d2"} // S
+				stroke={getColor(inputs[2])}
 				strokeWidth="3"
 			/>
 			<line
@@ -42,7 +50,7 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="75"
 				x2="60"
 				y2="60"
-				stroke={inputColors[3] || "#1976d2"} // R
+				stroke={getColor(inputs[3])}
 				strokeWidth="3"
 			/>
 
@@ -54,7 +62,7 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				height="40"
 				rx="6"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -63,7 +71,7 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				cy="15"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="1.5"
 			/>
 			<circle
@@ -71,22 +79,45 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				cy="65"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="1.5"
 			/>
 
 			{/* Etykiety wejść */}
-			<text x="35" y="35" fontSize="12" fill="#1976d2">
+			<text
+				x="35"
+				y="35"
+				fontSize="12"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				D
 			</text>
-			<text x="35" y="50" fontSize="10" fill="#555">
+			<text
+				x="35"
+				y="50"
+				fontSize="10"
+				fill={clockColor}
+				style={{ userSelect: "none" }}
+			>
 				CLK
 			</text>
-
-			<text x="58" y="30" fontSize="10" fill="#1976d2">
+			<text
+				x="58"
+				y="30"
+				fontSize="10"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				!S
 			</text>
-			<text x="58" y="55" fontSize="10" fill="#1976d2">
+			<text
+				x="58"
+				y="55"
+				fontSize="10"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				!R
 			</text>
 
@@ -96,7 +127,7 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="35"
 				x2="110"
 				y2="35"
-				stroke={outputColors[0] || "#1976d2"}
+				stroke={getColor(outputs[0])}
 				strokeWidth="3"
 			/>
 			<line
@@ -104,15 +135,27 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				y1="50"
 				x2="110"
 				y2="50"
-				stroke={outputColors[1] || "#1976d2"}
+				stroke={getColor(outputs[1])}
 				strokeWidth="3"
 			/>
 
 			{/* Etykiety wyjść */}
-			<text x="78" y="35" fontSize="12" fill="#1976d2">
+			<text
+				x="78"
+				y="35"
+				fontSize="12"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				Q
 			</text>
-			<text x="73" y="50" fontSize="12" fill="#1976d2">
+			<text
+				x="73"
+				y="50"
+				fontSize="12"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				!Q
 			</text>
 
@@ -121,7 +164,7 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({ inputs = [], outputs = [] }) => {
 				cy="50"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="1.5"
 			/>
 		</svg>

@@ -248,6 +248,7 @@ function EditableWire({
 	isSelected,
 	onSelect,
 	scale,
+	showColors,
 }: {
 	connection: Connection & { points?: { x: number; y: number }[] };
 	from: { x: number; y: number };
@@ -257,6 +258,7 @@ function EditableWire({
 	isSelected: boolean;
 	onSelect: () => void;
 	scale: number; // --- NOWY PROP ---
+	showColors: boolean;
 }) {
 	const fromRef = useRef(from);
 	const toRef = useRef(to);
@@ -465,7 +467,13 @@ function EditableWire({
 		.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`))
 		.join(" ");
 	const midpoints = computeMidpoints();
-	const strokeColor = isSelected ? "#ff3333" : isHigh ? "green" : "#1976d2";
+	const strokeColor = isSelected
+		? "#ff3333"
+		: showColors
+		? isHigh
+			? "green"
+			: "#1976d2"
+		: "black";
 	const strokeWidth = isSelected ? 4 : 3;
 
 	return (
@@ -559,6 +567,7 @@ function App() {
 	const [viewport, setViewport] = useState({ x: 0, y: 0, scale: 1 });
 	const [isPanning, setIsPanning] = useState(false);
 	const [isSimulationRunning, setIsSimulationRunning] = useState(false);
+	const [showColors, setShowColors] = useState(true);
 
 	useEffect(() => {
 		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -1015,6 +1024,8 @@ function App() {
 				isSimulationRunning={isSimulationRunning}
 				onToggleSimulation={handleToggleSimulation}
 				onReset={handleReset}
+				showColors={showColors}
+				onToggleColors={() => setShowColors(!showColors)}
 			/>
 
 			<div
@@ -1125,6 +1136,7 @@ function App() {
 											)
 										);
 									}}
+									showColors={showColors}
 								/>
 							);
 						})}
@@ -1146,6 +1158,7 @@ function App() {
 								}
 								scale={viewport.scale}
 								isSimulationRunning={isSimulationRunning}
+								showColors={showColors}
 							/>
 						</div>
 					))}

@@ -3,11 +3,18 @@ import React from "react";
 interface GateProps {
 	inputs?: number[];
 	outputs?: number[];
+	showColors?: boolean; // <-- Nowy prop
 }
 
-const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
-	const inputColors = inputs.map((v) => (v === 1 ? "green" : "#1976d2"));
-	const outputColors = outputs.map((v) => (v === 1 ? "green" : "#1976d2"));
+const Mux4: React.FC<GateProps> = ({
+	inputs = [],
+	outputs = [],
+	showColors = true,
+}) => {
+	// Logika kolorów
+	const getColor = (val: number | undefined) =>
+		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
+	const bodyColor = showColors ? "#1976d2" : "black";
 
 	return (
 		<svg width="120" height="110">
@@ -18,12 +25,12 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				width="70"
 				height="80"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 				rx="6"
 			/>
 
-			{/* Linie wejściowe danych */}
+			{/* Linie wejściowe danych (D0-D3) */}
 			{[0, 1, 2, 3].map((i) => (
 				<line
 					key={i}
@@ -31,17 +38,18 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 					y1={25 + i * 18}
 					x2="25"
 					y2={25 + i * 18}
-					stroke={inputColors[i] || "#1976d2"}
+					stroke={getColor(inputs[i])}
 					strokeWidth="3"
 				/>
 			))}
 
+			{/* Wejścia sterujące (A0, A1) */}
 			<line
 				x1="50"
 				y1="0"
 				x2="50"
 				y2="10"
-				stroke={inputColors[4] || "#1976d2"}
+				stroke={getColor(inputs[4])}
 				strokeWidth="3"
 			/>
 			<line
@@ -49,17 +57,17 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				y1="0"
 				x2="70"
 				y2="10"
-				stroke={inputColors[5] || "#1976d2"}
+				stroke={getColor(inputs[5])}
 				strokeWidth="3"
 			/>
 
-			{/* Linia Enable (6) - DÓŁ */}
+			{/* Linia Enable (!E) - DÓŁ */}
 			<line
 				x1="60"
-				y1="110" // Od dołu
+				y1="110"
 				x2="60"
-				y2="90" // Do obudowy
-				stroke={inputColors[6] || "#1976d2"}
+				y2="90"
+				stroke={getColor(inputs[6])}
 				strokeWidth="3"
 			/>
 			<circle
@@ -67,7 +75,7 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				cy="95"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -77,7 +85,7 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				y1="50"
 				x2="120"
 				y2="50"
-				stroke={outputColors[0] || "#1976d2"}
+				stroke={getColor(outputs[0])}
 				strokeWidth="3"
 			/>
 
@@ -86,7 +94,7 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 				cy="50"
 				r="5"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -97,26 +105,52 @@ const Mux4: React.FC<GateProps> = ({ inputs = [], outputs = [] }) => {
 					x="28"
 					y={28 + i * 18}
 					fontSize="10"
-					fill="#1976d2"
+					fill={bodyColor}
 					fontWeight="bold"
+					style={{ userSelect: "none" }}
 				>
 					{i}
 				</text>
 			))}
 
 			{/* Etykieta wyjścia */}
-			<text x="80" y="53" fontSize="10" fill="#1976d2" fontWeight="bold">
+			<text
+				x="80"
+				y="53"
+				fontSize="10"
+				fill={bodyColor}
+				fontWeight="bold"
+				style={{ userSelect: "none" }}
+			>
 				!Y
 			</text>
 
 			{/* Etykiety sterujące */}
-			<text x="45" y="20" fontSize="9" fill="#1976d2">
+			<text
+				x="45"
+				y="20"
+				fontSize="9"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				A0
 			</text>
-			<text x="65" y="20" fontSize="9" fill="#1976d2">
+			<text
+				x="65"
+				y="20"
+				fontSize="9"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				A1
 			</text>
-			<text x="55" y="88" fontSize="9" fill="#1976d2">
+			<text
+				x="55"
+				y="88"
+				fontSize="9"
+				fill={bodyColor}
+				style={{ userSelect: "none" }}
+			>
 				!E
 			</text>
 		</svg>

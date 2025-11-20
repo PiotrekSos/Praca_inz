@@ -5,7 +5,7 @@ type Props = {
 	onChange: (newText: string) => void;
 };
 
-const LabelBlock: React.FC<Props> = ({ text = "Label", onChange }) => {
+const LabelBlock: React.FC<Props> = ({ text = "ETYKIETA", onChange }) => {
 	const [editing, setEditing] = useState(false);
 	const [value, setValue] = useState(text);
 

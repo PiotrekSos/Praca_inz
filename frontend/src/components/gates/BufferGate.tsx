@@ -3,14 +3,18 @@ import React from "react";
 interface BufferGateProps {
 	inputs?: number[];
 	outputs?: number[];
+	showColors?: boolean; // <-- Nowy prop
 }
 
 const BufferGate: React.FC<BufferGateProps> = ({
 	inputs = [],
 	outputs = [],
+	showColors = true,
 }) => {
-	const inputColor = inputs[0] === 1 ? "green" : "#1976d2";
-	const outputColor = outputs[0] === 1 ? "green" : "#1976d2";
+	const getColor = (val: number | undefined) =>
+		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
+
+	const bodyColor = showColors ? "#1976d2" : "black";
 
 	return (
 		<svg width="100" height="60">
@@ -20,16 +24,15 @@ const BufferGate: React.FC<BufferGateProps> = ({
 				y1="30"
 				x2="20"
 				y2="30"
-				stroke={inputColor}
+				stroke={getColor(inputs[0])}
 				strokeWidth="3"
 			/>
 
-			{/* Kształt bramki (Trójkąt) */}
-			{/* Podstawa: x=20, wys=48px (od 6 do 54). Szczyt: x=20+48=68, y=30 */}
+			{/* Kształt bramki */}
 			<polygon
 				points="20,6 68,30 20,54"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 			/>
 
@@ -39,7 +42,7 @@ const BufferGate: React.FC<BufferGateProps> = ({
 				y1="30"
 				x2="100"
 				y2="30"
-				stroke={outputColor}
+				stroke={getColor(outputs[0])}
 				strokeWidth="3"
 			/>
 		</svg>

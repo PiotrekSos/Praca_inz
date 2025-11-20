@@ -9,6 +9,8 @@ import {
 	Play, // --- NOWE ---
 	Pause, // --- NOWE ---
 	RotateCcw, // --- NOWE ---
+	Eye,
+	EyeOff,
 } from "lucide-react";
 // ... (reszta importów bez zmian)
 import AndGate from "./gates/AndGate";
@@ -44,13 +46,17 @@ const categories = [
 	{
 		name: "Wejścia",
 		items: [
-			{ type: "CLOCK", label: "CLOCK", component: <ClockInput /> },
+			{ type: "CLOCK", label: "ZEGAR", component: <ClockInput /> },
 			{ type: "ONE", label: "1", component: <ConstOne /> },
 			{ type: "ZERO", label: "0", component: <ConstZero /> },
-			{ type: "TOGGLE", label: "TOGGLE", component: <ToggleSwitch /> },
+			{
+				type: "TOGGLE",
+				label: "PRZEŁĄCZNIK",
+				component: <ToggleSwitch />,
+			},
 			{
 				type: "LABEL",
-				label: "LABEL",
+				label: "ETYKIETA",
 				component: (
 					<div
 						style={{
@@ -59,7 +65,7 @@ const categories = [
 							padding: "2px 6px",
 						}}
 					>
-						Label
+						ETYKIETA
 					</div>
 				),
 			},
@@ -180,6 +186,8 @@ const Toolbox = ({
 	isSimulationRunning,
 	onToggleSimulation,
 	onReset,
+	showColors,
+	onToggleColors,
 }: {
 	onAddGate: (type: string) => void;
 	onSave: () => void;
@@ -188,6 +196,8 @@ const Toolbox = ({
 	isSimulationRunning: boolean;
 	onToggleSimulation: () => void;
 	onReset: () => void;
+	showColors: boolean;
+	onToggleColors: () => void;
 }) => {
 	const [openCategory, setOpenCategory] = useState<string | null>("Wejścia");
 	const [collapsed, setCollapsed] = useState(false);
@@ -276,26 +286,53 @@ const Toolbox = ({
 						<span>{isSimulationRunning ? "Stop" : "Start"}</span>
 					</button>
 
-					{/* Reset */}
-					<button
-						onClick={onReset}
-						title="Zresetuj układ (Stany i Pamięć)"
-						style={{
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							gap: 6,
-							padding: "6px",
-							cursor: "pointer",
-							border: "1px solid #ccc",
-							borderRadius: 4,
-							background: "white",
-							marginBottom: "4px",
-						}}
-					>
-						<RotateCcw size={16} />
-						<span style={{ fontSize: 12 }}>Reset</span>
-					</button>
+					{/* Pasek narzędzi: Reset, Kolory */}
+					<div style={{ display: "flex", gap: 4 }}>
+						<button
+							onClick={onReset}
+							title="Reset"
+							style={{
+								flex: 1,
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								padding: "6px",
+								cursor: "pointer",
+								border: "1px solid #ccc",
+								borderRadius: 4,
+								background: "white",
+							}}
+						>
+							<RotateCcw size={16} />
+						</button>
+
+						{/* --- PRZYCISK KOLORÓW --- */}
+						<button
+							onClick={onToggleColors}
+							title={
+								showColors
+									? "Ukryj kolory (Tryb czarno-biały)"
+									: "Pokaż kolory"
+							}
+							style={{
+								flex: 1,
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								padding: "6px",
+								cursor: "pointer",
+								border: "1px solid #ccc",
+								borderRadius: 4,
+								background: showColors ? "white" : "#ddd",
+							}}
+						>
+							{showColors ? (
+								<Eye size={16} />
+							) : (
+								<EyeOff size={16} />
+							)}
+						</button>
+					</div>
 
 					<div style={{ display: "flex", gap: 4 }}>
 						<button

@@ -1,8 +1,15 @@
+import React from "react";
+
 type Props = {
 	value?: number;
+	showColors?: boolean; // <-- Nowy prop
 };
 
-const ClockInput: React.FC<Props> = ({ value = 0 }) => {
+const ClockInput: React.FC<Props> = ({ value = 0, showColors = true }) => {
+	// Logika kolorów
+	const bodyColor = showColors ? "#1976d2" : "black";
+	const signalColor = showColors ? (value ? "green" : "#1976d2") : "black";
+
 	return (
 		<svg width="100" height="60">
 			{/* prostokąt zegara */}
@@ -12,7 +19,7 @@ const ClockInput: React.FC<Props> = ({ value = 0 }) => {
 				width="60"
 				height="40"
 				fill="white"
-				stroke="#1976d2"
+				stroke={bodyColor}
 				strokeWidth="2"
 				rx="6"
 			/>
@@ -20,7 +27,7 @@ const ClockInput: React.FC<Props> = ({ value = 0 }) => {
 			{/* wykres zegara */}
 			<path
 				d="M30,40 V25 H50 V40 H70 V25"
-				stroke={value ? "green" : "#1976d2"}
+				stroke={signalColor}
 				strokeWidth="3"
 				fill="none"
 			/>
@@ -31,7 +38,7 @@ const ClockInput: React.FC<Props> = ({ value = 0 }) => {
 				y1="30"
 				x2="100"
 				y2="30"
-				stroke={value ? "green" : "#1976d2"}
+				stroke={signalColor}
 				strokeWidth="3"
 			/>
 		</svg>

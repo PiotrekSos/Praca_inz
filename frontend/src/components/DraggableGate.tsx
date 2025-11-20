@@ -42,6 +42,7 @@ type Props = {
 	) => void;
 	scale: number;
 	isSimulationRunning: boolean;
+	showColors: boolean;
 };
 
 const DraggableGate: React.FC<Props> = ({
@@ -52,9 +53,11 @@ const DraggableGate: React.FC<Props> = ({
 	onSelect,
 	scale,
 	isSimulationRunning,
+	showColors,
 }) => {
 	const [dragging, setDragging] = useState(false);
 	const dragStartRef = useRef({ mouseX: 0, mouseY: 0, blockX: 0, blockY: 0 });
+	const gateClassName = showColors ? "" : "monochrome";
 
 	const handleMouseDown = (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -103,6 +106,7 @@ const DraggableGate: React.FC<Props> = ({
 						)}-${block.inputs?.join("")}`}
 						inputs={block.inputs}
 						outputs={block.outputs}
+						showColors={showColors}
 					/>
 				);
 			case "NOT":
@@ -113,40 +117,73 @@ const DraggableGate: React.FC<Props> = ({
 						)}-${block.inputs?.join("")}`}
 						inputs={block.inputs}
 						outputs={block.outputs}
+						showColors={showColors}
 					/>
 				);
 			case "AND":
 				return (
-					<AndGate inputs={block.inputs} outputs={block.outputs} />
+					<AndGate
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "OR":
-				return <OrGate inputs={block.inputs} outputs={block.outputs} />;
+				return (
+					<OrGate
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
+				);
 			case "XOR":
 				return (
-					<XorGate inputs={block.inputs} outputs={block.outputs} />
+					<XorGate
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "XNOR":
 				return (
-					<XnorGate inputs={block.inputs} outputs={block.outputs} />
+					<XnorGate
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "NOR":
 				return (
-					<NorGate inputs={block.inputs} outputs={block.outputs} />
+					<NorGate
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "NAND":
 				return (
-					<NandGate inputs={block.inputs} outputs={block.outputs} />
+					<NandGate
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "CLOCK":
-				return <ClockInput value={block.outputs[0]} />;
+				return (
+					<ClockInput
+						value={block.outputs[0]}
+						showColors={showColors}
+					/>
+				);
 			case "ONE":
-				return <ConstOne />;
+				return <ConstOne showColors={showColors} />;
 			case "ZERO":
-				return <ConstZero />;
+				return <ConstZero showColors={showColors} />;
 			case "TOGGLE":
 				return (
 					<ToggleSwitch
 						value={block.outputs[0] === 1}
+						showColors={showColors} // <--- DODAJ TO
 						onChange={(newValue) => {
 							onMove(
 								block.id,
@@ -159,55 +196,114 @@ const DraggableGate: React.FC<Props> = ({
 				);
 			case "D_FLIPFLOP":
 				return (
-					<DFlipFlop inputs={block.inputs} outputs={block.outputs} />
+					<DFlipFlop
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "T_FLIPFLOP":
 				return (
-					<TFlipFlop inputs={block.inputs} outputs={block.outputs} />
+					<TFlipFlop
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "JK_FLIPFLOP":
 				return (
-					<JKFlipFlop inputs={block.inputs} outputs={block.outputs} />
+					<JKFlipFlop
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "SR_FLIPFLOP":
 				return (
-					<SRFlipFlop inputs={block.inputs} outputs={block.outputs} />
+					<SRFlipFlop
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "LAMP":
 				return (
 					<LampOutput
 						isOn={isSimulationRunning && block.inputs?.[0] === 1}
+						showColors={showColors}
 					/>
 				);
 			case "NAND_4":
 				return (
-					<NandGate4 inputs={block.inputs} outputs={block.outputs} />
+					<NandGate4
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "NAND_8":
 				return (
-					<NandGate8 inputs={block.inputs} outputs={block.outputs} />
+					<NandGate8
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "NOR_4":
 				return (
-					<NorGate4 inputs={block.inputs} outputs={block.outputs} />
+					<NorGate4
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "NOR_8":
 				return (
-					<NorGate8 inputs={block.inputs} outputs={block.outputs} />
+					<NorGate8
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "MUX16":
-				return <Mux16 inputs={block.inputs} outputs={block.outputs} />;
+				return (
+					<Mux16
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
+				);
 			case "DEMUX16":
 				return (
-					<Demux16 inputs={block.inputs} outputs={block.outputs} />
+					<Demux16
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "MUX4":
-				return <Mux4 inputs={block.inputs} outputs={block.outputs} />;
+				return (
+					<Mux4
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
+				);
 			case "DEMUX4":
-				return <Demux4 inputs={block.inputs} outputs={block.outputs} />;
+				return (
+					<Demux4
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
+				);
 			case "RAM_16x4":
 				return (
-					<Ram16x4 inputs={block.inputs} outputs={block.outputs} />
+					<Ram16x4
+						inputs={block.inputs}
+						outputs={block.outputs}
+						showColors={showColors}
+					/>
 				);
 			case "LABEL":
 				return (
@@ -819,6 +915,30 @@ const DraggableGate: React.FC<Props> = ({
         .pin.input { background: #1976d2; }
         .pin.output { background: tomato; }
         div:hover > .pin { opacity: 1; }
+
+		.monochrome .pin.input,
+                    .monochrome .pin.output {
+                        background: black !important;
+                    }
+
+		.monochrome rect,
+                    .monochrome path,
+                    .monochrome line,
+                    .monochrome circle,
+                    .monochrome polygon {
+                        stroke: black !important;
+                    }		
+						
+		.monochrome svg text {
+                        fill: black !important;
+                        stroke: none !important;
+                    }
+		
+		.monochrome div {
+                        border-color: black !important;
+                        color: black !important;
+                    }			
+					
       `}
 			</style>
 		</div>
