@@ -132,7 +132,7 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					break;
 				}
 				case "SR_FLIPFLOP": {
-					const [S, R, CLK] = b.inputs;
+					const [S, R] = b.inputs;
 					if (S === 1 && R === 0) b.state = 1;
 					else if (S === 0 && R === 1) b.state = 0;
 					b.outputs[0] = Number(b.state);
@@ -270,7 +270,9 @@ function EditableWire({
 		onChangeRef.current = onChange;
 	}, [from, to, onChange]);
 
-	const generateDefaultPoints = (f, t) => [
+	type Point = { x: number; y: number };
+
+	const generateDefaultPoints = (f: Point, t: Point) => [
 		{ x: Math.round((f.x + t.x) / 2), y: f.y },
 		{ x: Math.round((f.x + t.x) / 2), y: t.y },
 	];
@@ -361,7 +363,7 @@ function EditableWire({
 		return mids;
 	};
 
-	const insertPointAtSegment = (segIdx) => {
+	const insertPointAtSegment = (segIdx: number) => {
 		const pts = pointsRef.current.slice();
 		const full = [fromRef.current, ...pts, toRef.current];
 		const a = full[segIdx];
@@ -377,90 +379,104 @@ function EditableWire({
 	};
 
 	// --- ZAKTUALIZOWANA FUNKCJA RUCHU ---
-	const getMovedPoint = (p, isVertical, dx, dy) =>
+	const getMovedPoint = (
+		p: Point,
+		isVertical: boolean,
+		dx: number,
+		dy: number
+	) =>
 		// Dzielimy przesunięcie przez skalę!
 		isVertical
 			? { x: p.x + dx / scale, y: p.y }
 			: { x: p.x, y: p.y + dy / scale };
 
-	const handleMidMouseDown = (m) => (e) => {
-		e.stopPropagation();
-		const startClientX = e.clientX;
-		const startClientY = e.clientY;
-		const startPts = pointsRef.current.map((p) => ({ ...p }));
-		const seg = m.segmentIndex;
-
-		const push = (pts) => {
-			const merged = mergeCollinearPoints(pts);
-			pointsRef.current = merged;
-			setLocalPoints(merged.slice());
-			onChange(merged.slice());
-		};
-
-		const move = (ev) => {
-			const dx = ev.clientX - startClientX;
-			const dy = ev.clientY - startClientY;
-			let newPts = startPts.map((p) => ({ ...p }));
-
-			if (seg === 0) {
-				const from = fromRef.current;
-				const first =
-					newPts.length > 0
-						? newPts[0]
-						: generateDefaultPoints(from, toRef.current)[0];
-				const moved = getMovedPoint(first, m.isVertical, dx, dy);
-				const vertical =
-					Math.abs(from.x - moved.x) < Math.abs(from.y - moved.y);
-				const corner = vertical
-					? { x: moved.x, y: from.y }
-					: { x: from.x, y: moved.y };
-				newPts = [corner, moved, ...newPts.slice(1)];
-			} else if (seg > 0 && seg < startPts.length) {
-				const p_start_idx = seg - 1;
-				const p_end_idx = seg;
-				newPts[p_start_idx] = getMovedPoint(
-					startPts[p_start_idx],
-					m.isVertical,
-					dx,
-					dy
-				);
-				newPts[p_end_idx] = getMovedPoint(
-					startPts[p_end_idx],
-					m.isVertical,
-					dx,
-					dy
-				);
-			} else if (seg === startPts.length) {
-				const to = toRef.current;
-				const last = newPts[newPts.length - 1];
-				const moved = getMovedPoint(last, m.isVertical, dx, dy);
-				const vertical =
-					Math.abs(to.x - moved.x) < Math.abs(to.y - moved.y);
-				const corner = vertical
-					? { x: moved.x, y: to.y }
-					: { x: to.x, y: moved.y };
-				newPts = [...newPts.slice(0, -1), moved, corner];
-			}
-			if (newPts.length >= 2) {
-				const first = newPts[0];
-				const second = newPts[1];
-				if (first.x !== second.x && first.y !== second.y)
-					newPts[1] = { x: first.x, y: second.y };
-				const last = newPts[newPts.length - 1];
-				const prev = newPts[newPts.length - 2];
-				if (last.x !== prev.x && last.y !== prev.y)
-					newPts[newPts.length - 2] = { x: prev.x, y: last.y };
-			}
-			push(newPts);
-		};
-
-		const up = () => {
-			window.removeEventListener("mousemove", move);
-			window.removeEventListener("mouseup", up);
-		};
-		window.addEventListener("mousemove", move);
-		window.addEventListener("mouseup", up);
+	type MidPointInfo = {
+		x: number;
+		y: number;
+		segmentIndex: number;
+		isVertical: boolean;
 	};
+
+	const handleMidMouseDown =
+		(m: MidPointInfo) =>
+		(e: React.MouseEvent<SVGPathElement, MouseEvent>) => {
+			e.stopPropagation();
+			const startClientX = e.clientX;
+			const startClientY = e.clientY;
+			const startPts = pointsRef.current.map((p) => ({ ...p }));
+			const seg = m.segmentIndex;
+
+			const push = (pts: Point[]) => {
+				const merged = mergeCollinearPoints(pts);
+				pointsRef.current = merged;
+				setLocalPoints(merged.slice());
+				onChange(merged.slice());
+			};
+
+			const move = (ev: MouseEvent) => {
+				const dx = ev.clientX - startClientX;
+				const dy = ev.clientY - startClientY;
+				let newPts = startPts.map((p) => ({ ...p }));
+
+				if (seg === 0) {
+					const from = fromRef.current;
+					const first =
+						newPts.length > 0
+							? newPts[0]
+							: generateDefaultPoints(from, toRef.current)[0];
+					const moved = getMovedPoint(first, m.isVertical, dx, dy);
+					const vertical =
+						Math.abs(from.x - moved.x) < Math.abs(from.y - moved.y);
+					const corner = vertical
+						? { x: moved.x, y: from.y }
+						: { x: from.x, y: moved.y };
+					newPts = [corner, moved, ...newPts.slice(1)];
+				} else if (seg > 0 && seg < startPts.length) {
+					const p_start_idx = seg - 1;
+					const p_end_idx = seg;
+					newPts[p_start_idx] = getMovedPoint(
+						startPts[p_start_idx],
+						m.isVertical,
+						dx,
+						dy
+					);
+					newPts[p_end_idx] = getMovedPoint(
+						startPts[p_end_idx],
+						m.isVertical,
+						dx,
+						dy
+					);
+				} else if (seg === startPts.length) {
+					const to = toRef.current;
+					const last = newPts[newPts.length - 1];
+					const moved = getMovedPoint(last, m.isVertical, dx, dy);
+					const vertical =
+						Math.abs(to.x - moved.x) < Math.abs(to.y - moved.y);
+					const corner = vertical
+						? { x: moved.x, y: to.y }
+						: { x: to.x, y: moved.y };
+					newPts = [...newPts.slice(0, -1), moved, corner];
+				}
+				if (newPts.length >= 2) {
+					const first = newPts[0];
+					const second = newPts[1];
+					if (first.x !== second.x && first.y !== second.y)
+						newPts[1] = { x: first.x, y: second.y };
+					const last = newPts[newPts.length - 1];
+					const prev = newPts[newPts.length - 2];
+					if (last.x !== prev.x && last.y !== prev.y)
+						newPts[newPts.length - 2] = { x: prev.x, y: last.y };
+				}
+				push(newPts);
+			};
+
+			const up = () => {
+				window.removeEventListener("mousemove", move);
+				window.removeEventListener("mouseup", up);
+			};
+			window.addEventListener("mousemove", move);
+			window.addEventListener("mouseup", up);
+		};
 
 	const full = [fromRef.current, ...localPoints, toRef.current];
 	const pathData = full
@@ -569,6 +585,15 @@ function App() {
 	const [isSimulationRunning, setIsSimulationRunning] = useState(false);
 	const [showColors, setShowColors] = useState(true);
 	const [circuitVersion, setCircuitVersion] = useState(0);
+	interface JsonBlock extends Omit<Block, "memory"> {
+		memory?: Record<string, number>; // JSON zapisuje Uint8Array jako obiekt { "0": 255, "1": ... }
+	}
+	interface SaveData {
+		version: string;
+		blocks: JsonBlock[];
+		connections: Connection[];
+		viewport?: { x: number; y: number; scale: number };
+	}
 
 	useEffect(() => {
 		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -649,7 +674,7 @@ function App() {
 	};
 
 	// --- NOWOŚĆ: ODCZYT (LOAD) ---
-	const handleLoad = (data: any) => {
+	const handleLoad = (data: SaveData) => {
 		if (!data || typeof data !== "object") {
 			alert("Nieprawidłowy format pliku!");
 			return;
@@ -661,7 +686,7 @@ function App() {
 			return;
 		}
 
-		const restoredBlocks = data.blocks.map((b: any) => {
+		const restoredBlocks = data.blocks.map((b) => {
 			// Odtwarzanie pamięci RAM z JSON-a (gdzie zapisuje się jako obiekt {0: x, 1: y...})
 			if (b.type === "RAM_16x4" && b.memory) {
 				const mem = new Uint8Array(16);
@@ -669,9 +694,9 @@ function App() {
 				for (let i = 0; i < 16; i++) {
 					mem[i] = b.memory[i] || 0;
 				}
-				return { ...b, memory: mem };
+				return { ...b, memory: mem } as Block;
 			}
-			return b;
+			return b as Block;
 		});
 
 		const evaluatedBlocks = evaluateCircuit(
@@ -955,10 +980,14 @@ function App() {
 				{
 					from: {
 						blockId: pending.from.blockId,
-						pin: "output",
+						pin: "output" as const,
 						outputIndex: pending.from.outputIndex ?? 0,
 					},
-					to: { blockId, pin: "input", inputIndex: index ?? 0 },
+					to: {
+						blockId,
+						pin: "input" as const,
+						inputIndex: index ?? 0,
+					},
 				},
 			];
 			setConnections(newConnections);
@@ -1104,7 +1133,7 @@ function App() {
 							const to = getInputPinPosition(
 								toBlock,
 								c.to.inputIndex
-							);
+							) || { x: 0, y: 0 };
 							const isHigh =
 								fromBlock.outputs[c.from.outputIndex ?? 0] ===
 								1;
@@ -1133,7 +1162,9 @@ function App() {
 											index: i,
 										})
 									}
-									onChange={(newPoints: any) => {
+									onChange={(
+										newPoints: { x: number; y: number }[]
+									) => {
 										setConnections((prev) =>
 											prev.map((conn, idx) =>
 												idx === i

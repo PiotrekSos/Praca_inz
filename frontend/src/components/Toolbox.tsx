@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
 	ChevronDown,
 	ChevronRight,
@@ -39,6 +39,7 @@ import Demux16 from "./gates/Demux16";
 import Mux4 from "./gates/Mux4";
 import Demux4 from "./gates/Demux4";
 import Ram16x4 from "./blocks/Ram16x4";
+import type { BlockType, Block, Connection } from "../types";
 
 // ... (categories i ScaledPreview bez zmian) ...
 const categories = [
@@ -52,7 +53,7 @@ const categories = [
 			{
 				type: "TOGGLE",
 				label: "PRZEŁĄCZNIK",
-				component: <ToggleSwitch />,
+				component: <ToggleSwitch value={false} onChange={() => {}} />,
 			},
 			{
 				type: "LABEL",
@@ -128,7 +129,7 @@ const ScaledPreview = ({
 	maxWidth,
 	maxHeight,
 }: {
-	component: JSX.Element;
+	component: React.ReactNode;
 	maxWidth: number;
 	maxHeight: number;
 }) => {
@@ -177,6 +178,17 @@ const ScaledPreview = ({
 	);
 };
 
+interface JsonBlock extends Omit<Block, "memory"> {
+	memory?: Record<string, number>;
+}
+
+interface SaveData {
+	version: string;
+	blocks: JsonBlock[];
+	connections: Connection[];
+	viewport?: { x: number; y: number; scale: number };
+}
+
 const Toolbox = ({
 	onAddGate,
 	onSave,
@@ -189,9 +201,9 @@ const Toolbox = ({
 	showColors,
 	onToggleColors,
 }: {
-	onAddGate: (type: string) => void;
+	onAddGate: (type: BlockType) => void;
 	onSave: () => void;
-	onLoad: (data: any) => void;
+	onLoad: (data: SaveData) => void;
 	onExport: () => void;
 	isSimulationRunning: boolean;
 	onToggleSimulation: () => void;
@@ -445,7 +457,9 @@ const Toolbox = ({
 										({ type, component, label }) => (
 											<div
 												key={type}
-												onClick={() => onAddGate(type)}
+												onClick={() =>
+													onAddGate(type as BlockType)
+												}
 												style={{
 													border: "1px solid #aaa",
 													borderRadius: 8,

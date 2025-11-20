@@ -57,7 +57,6 @@ const DraggableGate: React.FC<Props> = ({
 }) => {
 	const [dragging, setDragging] = useState(false);
 	const dragStartRef = useRef({ mouseX: 0, mouseY: 0, blockX: 0, blockY: 0 });
-	const gateClassName = showColors ? "" : "monochrome";
 
 	const handleMouseDown = (e: React.MouseEvent) => {
 		e.stopPropagation();
