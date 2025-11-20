@@ -11,7 +11,6 @@ type Selection =
 	| null;
 
 const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
-	// (LOGIKA EWALUACJI BEZ ZMIAN - SKOPIUJ Z POPRZEDNICH WERSJI)
 	const newBlocks = blocks.map((b) => ({ ...b, inputs: [...b.inputs] }));
 	for (const b of newBlocks) {
 		switch (b.type) {
@@ -50,7 +49,6 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 			}
 		}
 		for (const b of newBlocks) {
-			// --- WKLEJ TUTAJ CAŁY DUŻY SWITCH ---
 			switch (b.type) {
 				case "AND":
 					b.outputs[0] = b.inputs.every((v) => v === 1) ? 1 : 0;
@@ -79,35 +77,58 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 				case "D_FLIPFLOP": {
 					const [D, CLK, S_low, R_low] = b.inputs;
 					if (!("state" in b)) b.state = 0;
+					if (!("prevClock" in b)) b.prevClock = 0;
+
 					if (R_low === 0) b.state = 0;
 					else if (S_low === 0) b.state = 1;
-					else if (CLK === 1) b.state = D;
+					else if (CLK === 1 && b.prevClock === 0) b.state = D; // Zbocze 0->1
+
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
+					b.prevClock = CLK;
 					break;
 				}
 				case "T_FLIPFLOP": {
 					const [T, CLK, S_low, R_low] = b.inputs;
 					if (!("state" in b)) b.state = 0;
+					if (!("prevClock" in b)) b.prevClock = 0;
+
 					if (R_low === 0) b.state = 0;
 					else if (S_low === 0) b.state = 1;
 					else if (CLK === 1 && T === 1) b.state = b.state ? 0 : 1;
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
+					b.prevClock = CLK;
 					break;
 				}
 				case "JK_FLIPFLOP": {
+					// 1. Pobieramy wejścia
 					const [J, K, CLK, S_low, R_low] = b.inputs;
+
+					// 2. Inicjalizacja stanu i poprzedniego zegara (jeśli nie istnieją)
 					if (!("state" in b)) b.state = 0;
-					if (R_low === 0) b.state = 0;
-					else if (S_low === 0) b.state = 1;
-					else if (CLK === 1) {
+					if (!("prevClock" in b)) b.prevClock = 0; // Nowość
+
+					// 3. Logika asynchroniczna (ma priorytet, niezależna od zegara)
+					if (R_low === 0) {
+						b.state = 0;
+					} else if (S_low === 0) {
+						b.state = 1;
+					}
+					// 4. Logika synchroniczna (tylko na zboczu narastającym 0 -> 1)
+					else if (CLK === 1 && b.prevClock === 0) {
 						if (J === 0 && K === 1) b.state = 0;
 						else if (J === 1 && K === 0) b.state = 1;
-						else if (J === 1 && K === 1) b.state = b.state ? 0 : 1;
+						else if (J === 1 && K === 1) b.state = b.state ? 0 : 1; // Toggle
 					}
+
+					// 5. Aktualizacja wyjść
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
+
+					// 6. Zapisz obecny stan zegara dla następnej klatki symulacji
+					b.prevClock = CLK;
+
 					break;
 				}
 				case "SR_FLIPFLOP": {
@@ -537,6 +558,7 @@ function App() {
 	// --- DODANO SCALE: 1 ---
 	const [viewport, setViewport] = useState({ x: 0, y: 0, scale: 1 });
 	const [isPanning, setIsPanning] = useState(false);
+	const [isSimulationRunning, setIsSimulationRunning] = useState(false);
 
 	useEffect(() => {
 		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -554,6 +576,44 @@ function App() {
 			window.removeEventListener("beforeunload", handleBeforeUnload);
 		};
 	}, [blocks]);
+
+	const handleReset = () => {
+		// 1. Zatrzymaj symulację
+		setIsSimulationRunning(false);
+
+		// 2. Zresetuj każdy blok
+		const resetBlocks = blocks.map((block) => {
+			// Kopia bloku
+			const newBlock = { ...block };
+
+			// Wyzeruj wszystkie wejścia
+			newBlock.inputs = newBlock.inputs.map(() => 0);
+
+			// Wyzeruj stany wewnętrzne przerzutników
+			if ("state" in newBlock) {
+				newBlock.state = 0;
+			}
+			if ("prevClock" in newBlock) {
+				newBlock.prevClock = 0;
+			}
+
+			// Wyczyść pamięć RAM
+			if ("memory" in newBlock) {
+				newBlock.memory = new Uint8Array(16); // Nowa, pusta tablica
+			}
+
+			// Wyzeruj wyjścia (evaluateCircuit zaraz ustawi poprawne wartości startowe)
+			newBlock.outputs = newBlock.outputs.map(() => 0);
+
+			return newBlock;
+		});
+
+		// 3. Przelicz układ raz, aby przywrócić poprawne stany początkowe
+		// (np. Stała 1 musi dawać 1, Przerzutnik musi mieć Q=0 i !Q=1)
+		const initializedBlocks = evaluateCircuit(resetBlocks, connections);
+
+		setBlocks(initializedBlocks);
+	};
 
 	const handleSave = () => {
 		const data = {
@@ -697,6 +757,45 @@ function App() {
 		}
 	};
 
+	const handleToggleSimulation = () => {
+		if (isSimulationRunning) {
+			// Jeśli działa -> zatrzymaj
+			setIsSimulationRunning(false);
+		} else {
+			// Jeśli nie działa -> sprawdź czy można włączyć
+
+			// Sprawdzanie wiszących wejść
+			for (const block of blocks) {
+				// Pomijamy źródła (one nie potrzebują wejść)
+				if (
+					["ONE", "ZERO", "TOGGLE", "CLOCK", "LABEL"].includes(
+						block.type
+					)
+				) {
+					continue;
+				}
+
+				// Sprawdź czy każde wejście ma podłączenie
+				for (let i = 0; i < block.inputs.length; i++) {
+					const isConnected = connections.some(
+						(c) =>
+							c.to.blockId === block.id && c.to.inputIndex === i
+					);
+
+					if (!isConnected) {
+						alert(
+							`Błąd: Blok (ID: ${block.id}, Typ: ${block.type}) ma niepodłączone wejście nr ${i}. Połącz wszystkie wejścia, aby uruchomić symulację.`
+						);
+						return; // Przerwij, nie włączaj
+					}
+				}
+			}
+
+			// Jeśli przeszło walidację
+			setIsSimulationRunning(true);
+		}
+	};
+
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if ((e.key === "Delete" || e.key === "Backspace") && selection) {
@@ -821,7 +920,24 @@ function App() {
 		if (pin === "output" && !pending.from) {
 			setPending({ from: { blockId, outputIndex: index ?? 0 } });
 		} else if (pin === "input" && pending.from) {
-			if (pending.from.blockId === blockId) return;
+			if (pending.from.blockId === blockId) {
+				setPending({ from: null });
+				return;
+			}
+
+			const isInputOccupied = connections.some(
+				(c) =>
+					c.to.blockId === blockId && c.to.inputIndex === (index ?? 0)
+			);
+
+			if (isInputOccupied) {
+				alert(
+					"To wejście jest już podłączone! Usuń istniejące połączenie, aby dodać nowe."
+				);
+				setPending({ from: null });
+				return;
+			}
+
 			const newConnections = [
 				...connections,
 				{
@@ -840,6 +956,9 @@ function App() {
 	};
 
 	useEffect(() => {
+		// Jeśli pauza -> nie uruchamiaj interwału
+		if (!isSimulationRunning) return;
+
 		const interval = setInterval(() => {
 			setBlocks((prev) => {
 				const updated = prev.map((b) =>
@@ -851,7 +970,7 @@ function App() {
 			});
 		}, 1000);
 		return () => clearInterval(interval);
-	}, [connections]);
+	}, [connections, isSimulationRunning]);
 
 	// --- LOGIKA ZOOMOWANIA (Wheel) ---
 	const handleWheel = (e: React.WheelEvent) => {
@@ -893,6 +1012,9 @@ function App() {
 				onSave={handleSave}
 				onLoad={handleLoad}
 				onExport={handleExportImage}
+				isSimulationRunning={isSimulationRunning}
+				onToggleSimulation={handleToggleSimulation}
+				onReset={handleReset}
 			/>
 
 			<div
@@ -1023,6 +1145,7 @@ function App() {
 									setSelection({ type: "block", id: b.id })
 								}
 								scale={viewport.scale}
+								isSimulationRunning={isSimulationRunning}
 							/>
 						</div>
 					))}

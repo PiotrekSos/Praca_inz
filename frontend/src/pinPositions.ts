@@ -111,11 +111,11 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 			}
 			// inputIndex 3: S (góra)
 			if (inputIndex === 3) {
-				return { x: baseX + 56 + 7, y: baseY - 7 + 7 };
+				return { x: baseX + 53 + 7, y: baseY + 6 };
 			}
 			// inputIndex 4: R (dół)
 			if (inputIndex === 4) {
-				return { x: baseX + 56 + 7, y: baseY + 60 + 7 }; // 60 = height bloku
+				return { x: baseX + 53 + 7, y: baseY + 85 + 7 }; // 60 = height bloku
 			}
 			break;
 		}

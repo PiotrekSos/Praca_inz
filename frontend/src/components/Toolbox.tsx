@@ -6,7 +6,11 @@ import {
 	Save,
 	FolderOpen,
 	Camera,
+	Play, // --- NOWE ---
+	Pause, // --- NOWE ---
+	RotateCcw, // --- NOWE ---
 } from "lucide-react";
+// ... (reszta importów bez zmian)
 import AndGate from "./gates/AndGate";
 import OrGate from "./gates/OrGate";
 import NotGate from "./gates/NotGate";
@@ -34,7 +38,9 @@ import Mux4 from "./gates/Mux4";
 import Demux4 from "./gates/Demux4";
 import Ram16x4 from "./blocks/Ram16x4";
 
+// ... (categories i ScaledPreview bez zmian) ...
 const categories = [
+	// ... (skopiuj kategorie z poprzedniej wersji, są długie) ...
 	{
 		name: "Wejścia",
 		items: [
@@ -111,7 +117,6 @@ const categories = [
 	},
 ];
 
-// --- Dynamicznie skalujący podgląd ---
 const ScaledPreview = ({
 	component,
 	maxWidth,
@@ -166,28 +171,33 @@ const ScaledPreview = ({
 	);
 };
 
-// --- Toolbox ---
 const Toolbox = ({
 	onAddGate,
 	onSave,
 	onLoad,
 	onExport,
+	// --- NOWE PROPSY ---
+	isSimulationRunning,
+	onToggleSimulation,
+	onReset,
 }: {
 	onAddGate: (type: string) => void;
 	onSave: () => void;
 	onLoad: (data: any) => void;
 	onExport: () => void;
+	isSimulationRunning: boolean;
+	onToggleSimulation: () => void;
+	onReset: () => void;
 }) => {
 	const [openCategory, setOpenCategory] = useState<string | null>("Wejścia");
 	const [collapsed, setCollapsed] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const toolboxWidth = 200; // węższy toolbox
+	const toolboxWidth = 200;
 
 	const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
 		if (!file) return;
-
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			try {
@@ -199,7 +209,6 @@ const Toolbox = ({
 			}
 		};
 		reader.readAsText(file);
-		// Reset inputa, żeby można było wczytać ten sam plik ponownie
 		event.target.value = "";
 	};
 
@@ -214,7 +223,6 @@ const Toolbox = ({
 				zIndex: 10,
 			}}
 		>
-			{/* Toolbox właściwy */}
 			<div
 				style={{
 					width: toolboxWidth,
@@ -236,13 +244,43 @@ const Toolbox = ({
 						background: "#f0f0f0",
 						display: "flex",
 						gap: "8px",
+						flexDirection: "column",
 					}}
 				>
+					{/* --- SEKCJA SYMULACJI (NOWA) --- */}
 					<button
-						onClick={onSave}
-						title="Zapisz do pliku"
+						onClick={onToggleSimulation}
+						title={
+							isSimulationRunning ? "Pauza" : "Start Symulacji"
+						}
 						style={{
-							flex: 1,
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							gap: 6,
+							padding: "8px",
+							cursor: "pointer",
+							border: "1px solid #ccc",
+							borderRadius: 4,
+							background: isSimulationRunning
+								? "#ffcccc"
+								: "#ccffcc", // Czerwony jak stop, Zielony jak start
+							fontWeight: "bold",
+						}}
+					>
+						{isSimulationRunning ? (
+							<Pause size={18} />
+						) : (
+							<Play size={18} />
+						)}
+						<span>{isSimulationRunning ? "Stop" : "Start"}</span>
+					</button>
+
+					{/* Reset */}
+					<button
+						onClick={onReset}
+						title="Zresetuj układ (Stany i Pamięć)"
+						style={{
 							display: "flex",
 							alignItems: "center",
 							justifyContent: "center",
@@ -252,60 +290,66 @@ const Toolbox = ({
 							border: "1px solid #ccc",
 							borderRadius: 4,
 							background: "white",
+							marginBottom: "4px",
 						}}
 					>
-						<Save size={16} />
-						<span style={{ fontSize: 12 }}>Zapisz</span>
+						<RotateCcw size={16} />
+						<span style={{ fontSize: 12 }}>Reset</span>
 					</button>
 
-					<button
-						onClick={() => fileInputRef.current?.click()}
-						title="Wczytaj z pliku"
-						style={{
-							flex: 1,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							gap: 6,
-							padding: "6px",
-							cursor: "pointer",
-							border: "1px solid #ccc",
-							borderRadius: 4,
-							background: "white",
-						}}
-					>
-						<FolderOpen size={16} />
-						<span style={{ fontSize: 12 }}>Wczytaj</span>
-					</button>
-
-					<button
-						onClick={onExport}
-						title="Eksportuj do PNG"
-						style={{
-							flex: 1,
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							gap: 6,
-							padding: "6px",
-							cursor: "pointer",
-							border: "1px solid #ccc",
-							borderRadius: 4,
-							background: "white",
-						}}
-					>
-						<Camera size={16} />
-					</button>
-
-					<input
-						type="file"
-						accept=".json"
-						ref={fileInputRef}
-						style={{ display: "none" }}
-						onChange={handleFileChange}
-					/>
-
-					{/* Ukryty input do plików */}
+					<div style={{ display: "flex", gap: 4 }}>
+						<button
+							onClick={onSave}
+							title="Zapisz"
+							style={{
+								flex: 1,
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								padding: "6px",
+								cursor: "pointer",
+								border: "1px solid #ccc",
+								borderRadius: 4,
+								background: "white",
+							}}
+						>
+							<Save size={16} />
+						</button>
+						<button
+							onClick={() => fileInputRef.current?.click()}
+							title="Wczytaj"
+							style={{
+								flex: 1,
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								padding: "6px",
+								cursor: "pointer",
+								border: "1px solid #ccc",
+								borderRadius: 4,
+								background: "white",
+							}}
+						>
+							<FolderOpen size={16} />
+						</button>
+						<button
+							onClick={onExport}
+							title="Eksportuj"
+							style={{
+								flex: 1,
+								display: "flex",
+								alignItems: "center",
+								justifyContent: "center",
+								padding: "6px",
+								cursor: "pointer",
+								border: "1px solid #ccc",
+								borderRadius: 4,
+								background: "white",
+							}}
+						>
+							<Camera size={16} />
+						</button>
+					</div>
 					<input
 						type="file"
 						accept=".json"
@@ -320,6 +364,9 @@ const Toolbox = ({
 					return (
 						<div key={cat.name}>
 							<div
+								onClick={() =>
+									setOpenCategory(open ? null : cat.name)
+								}
 								style={{
 									display: "flex",
 									alignItems: "center",
@@ -331,9 +378,6 @@ const Toolbox = ({
 									marginTop: 4,
 									borderRadius: 6,
 								}}
-								onClick={() =>
-									setOpenCategory(open ? null : cat.name)
-								}
 							>
 								{open ? (
 									<ChevronDown size={16} />
@@ -344,8 +388,6 @@ const Toolbox = ({
 									{cat.name}
 								</span>
 							</div>
-
-							{/* płynne rozwijanie */}
 							<div
 								style={{
 									maxHeight: open ? 400 : 0,
@@ -407,8 +449,6 @@ const Toolbox = ({
 					);
 				})}
 			</div>
-
-			{/* przycisk zwijania wystający */}
 			<div
 				onClick={() => setCollapsed(!collapsed)}
 				style={{

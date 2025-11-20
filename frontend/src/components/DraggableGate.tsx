@@ -41,6 +41,7 @@ type Props = {
 		inputIndex?: number
 	) => void;
 	scale: number;
+	isSimulationRunning: boolean;
 };
 
 const DraggableGate: React.FC<Props> = ({
@@ -50,6 +51,7 @@ const DraggableGate: React.FC<Props> = ({
 	isSelected,
 	onSelect,
 	scale,
+	isSimulationRunning,
 }) => {
 	const [dragging, setDragging] = useState(false);
 	const dragStartRef = useRef({ mouseX: 0, mouseY: 0, blockX: 0, blockY: 0 });
@@ -172,7 +174,11 @@ const DraggableGate: React.FC<Props> = ({
 					<SRFlipFlop inputs={block.inputs} outputs={block.outputs} />
 				);
 			case "LAMP":
-				return <LampOutput isOn={block.inputs?.[0] === 1} />;
+				return (
+					<LampOutput
+						isOn={isSimulationRunning && block.inputs?.[0] === 1}
+					/>
+				);
 			case "NAND_4":
 				return (
 					<NandGate4 inputs={block.inputs} outputs={block.outputs} />
