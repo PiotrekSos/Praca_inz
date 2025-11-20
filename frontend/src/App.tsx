@@ -568,6 +568,7 @@ function App() {
 	const [isPanning, setIsPanning] = useState(false);
 	const [isSimulationRunning, setIsSimulationRunning] = useState(false);
 	const [showColors, setShowColors] = useState(true);
+	const [circuitVersion, setCircuitVersion] = useState(0);
 
 	useEffect(() => {
 		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -684,6 +685,8 @@ function App() {
 		if (data.viewport) {
 			setViewport(data.viewport);
 		}
+
+		setCircuitVersion((v) => v + 1);
 
 		// Reset wyboru i pending
 		setSelection(null);
@@ -1109,9 +1112,15 @@ function App() {
 								selection?.type === "connection" &&
 								selection.index === i;
 
+							const uniqueKey = `${circuitVersion}-${
+								c.from.blockId
+							}-${c.from.outputIndex ?? 0}-${c.to.blockId}-${
+								c.to.inputIndex
+							}`;
+
 							return (
 								<EditableWire
-									key={i}
+									key={uniqueKey}
 									connection={c}
 									from={from}
 									to={to}
@@ -1144,7 +1153,11 @@ function App() {
 
 					{/* Bramki (Wewnątrz circuit-board) */}
 					{blocks.map((b) => (
-						<div key={b.id} style={{ pointerEvents: "all" }}>
+						<div
+							key={`${circuitVersion}-${b.id}`}
+							style={{ pointerEvents: "all" }}
+						>
+							{" "}
 							<DraggableGate
 								block={b}
 								onMove={handleMove}
