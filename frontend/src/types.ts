@@ -59,3 +59,18 @@ export type Block = {
 	memory?: Uint8Array;
 	label?: string;
 };
+
+export interface JsonBlock extends Omit<Block, "memory"> {
+	memory?: Record<string, number>;
+}
+export interface SaveData {
+	version: string;
+	blocks: JsonBlock[];
+	connections: Connection[];
+	viewport?: { x: number; y: number; scale: number };
+}
+
+export type Selection =
+	| { type: "block"; id: number }
+	| { type: "connection"; index: number }
+	| null;

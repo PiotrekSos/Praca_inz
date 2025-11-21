@@ -17,7 +17,7 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 			// 2 wejścia sterujące (4-5) U GÓRY
 			if (inputIndex < 6) {
 				const ctrlIdx = inputIndex - 4;
-				return { x: baseX + (43 + ctrlIdx * 20) + 7, y: baseY - 7 + 7 }; // Było y: 1
+				return { x: baseX + (43 + ctrlIdx * 20) + 7, y: baseY - 6 + 7 }; // Było y: 1
 			}
 			// 1 wejście !E (6) U DOŁU
 			if (inputIndex === 6) {
@@ -37,11 +37,11 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 			// 4 wejścia sterujące (16-19) od góry
 			if (inputIndex < 20) {
 				const ctrlIdx = inputIndex - 16;
-				return { x: baseX + (33 + ctrlIdx * 15) + 6, y: baseY - 7 + 7 };
+				return { x: baseX + (34 + ctrlIdx * 15) + 6, y: baseY - 6 + 7 };
 			}
 			// 1 wejście !E (20) U DOŁU
 			if (inputIndex === 20) {
-				return { x: baseX + 53 + 7, y: baseY + 340 - 7 + 7 }; // 330(h) - 7
+				return { x: baseX + 53 + 7, y: baseY + 340 - 7 + 6 }; // 330(h) - 7
 			}
 			break;
 		}
@@ -54,11 +54,11 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 			// 2 wejścia sterujące (1-2) od góry
 			if (inputIndex < 3) {
 				const ctrlIdx = inputIndex - 1;
-				return { x: baseX + (43 + ctrlIdx * 20) + 7, y: baseY - 7 + 7 };
+				return { x: baseX + (43 + ctrlIdx * 20) + 7, y: baseY - 6 + 7 };
 			}
 			// 1 wejście !E (3) U DOŁU
 			if (inputIndex === 3) {
-				return { x: baseX + 53 + 7, y: baseY + 110 - 7 + 7 }; // 100(h) - 7
+				return { x: baseX + 53 + 7, y: baseY + 110 - 7 + 6 }; // 100(h) - 7
 			}
 			break;
 		}
@@ -71,7 +71,7 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 			// 4 wejścia sterujące (1-4) od góry
 			if (inputIndex < 5) {
 				const ctrlIdx = inputIndex - 1;
-				return { x: baseX + (33 + ctrlIdx * 15) + 6, y: baseY - 7 + 7 };
+				return { x: baseX + (34 + ctrlIdx * 15) + 6, y: baseY - 6 + 7 };
 			}
 			// 1 wejście !E (5) U DOŁU
 			if (inputIndex === 5) {
@@ -91,11 +91,11 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 			}
 			// inputIndex 2: S (góra)
 			if (inputIndex === 2) {
-				return { x: baseX + 54 + 7, y: baseY - 2 + 7 };
+				return { x: baseX + 53 + 7, y: baseY - 1 + 7 };
 			}
 			// inputIndex 3: R (dół)
 			if (inputIndex === 3) {
-				return { x: baseX + 54 + 7, y: baseY + 68 + 7 }; // 60 = height bloku
+				return { x: baseX + 53 + 7, y: baseY + 67 + 7 }; // 60 = height bloku
 			}
 			break; // Powrót do default jeśli coś pójdzie nie tak
 		}
@@ -115,7 +115,7 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 			}
 			// inputIndex 4: R (dół)
 			if (inputIndex === 4) {
-				return { x: baseX + 53 + 7, y: baseY + 85 + 7 }; // 60 = height bloku
+				return { x: baseX + 53 + 7, y: baseY + 87 + 7 }; // 60 = height bloku
 			}
 			break;
 		}
@@ -152,7 +152,7 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 		case "NOR_8": {
 			return {
 				x: baseX + -6 + 7,
-				y: baseY + (21 + inputIndex * 15) + 7,
+				y: baseY + (21.5 + inputIndex * 15) + 7,
 			};
 		}
 
@@ -171,11 +171,11 @@ export const getInputPinPosition = (block: Block, inputIndex: number) => {
 			}
 			// CS
 			if (inputIndex === 8) {
-				return { x: baseX + 62 + 8, y: baseY - 7 + 7 };
+				return { x: baseX + 62.3 + 8, y: baseY - 6 + 7 };
 			}
 			// WE
 			if (inputIndex === 9) {
-				return { x: baseX + 63 + 7, y: baseY + 173 + 6 }; // 180 (height) - 7
+				return { x: baseX + 63.3 + 7, y: baseY + 173 + 5 }; // 180 (height) - 7
 			}
 			break; // Domyślna obsługa (np. dla CLK, jeśli istnieje)
 		}
