@@ -5,6 +5,7 @@ import EditableWire from "./components/EditableWire";
 import type { Block, Connection, Selection } from "./types.ts";
 import { getInputPinPosition, getOutputPinPosition } from "./pinPositions";
 import { exportToImage } from "./utils/exportUtils";
+import { Junctions } from "./components/Junctions";
 
 import { useUnsavedChangesWarning } from "./hooks/useUnsavedChangesWarning";
 import { useFileHandler } from "./hooks/useFileHandler";
@@ -189,6 +190,11 @@ function App() {
 								/>
 							);
 						})}
+						<Junctions
+							connections={connections}
+							blocks={blocks}
+							showColors={showColors}
+						/>
 					</svg>
 
 					{/* Bramki (Wewnątrz circuit-board) */}
