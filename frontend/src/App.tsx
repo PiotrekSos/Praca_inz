@@ -142,29 +142,51 @@ const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 				case "RAM_16x4": {
 					const dataIn = b.inputs.slice(0, 4);
 					const addressIn = b.inputs.slice(4, 8);
+					// Wejścia sterujące są zanegowane (!CS, !WE), więc 0 oznacza aktywację
 					const CS_low = b.inputs[8] ?? 1;
 					const WE_low = b.inputs[9] ?? 1;
+
 					if (!b.memory) b.memory = new Uint8Array(16);
+
+					// Obliczanie adresu
 					let address = 0;
 					if (addressIn[0] === 1) address |= 1;
 					if (addressIn[1] === 1) address |= 2;
 					if (addressIn[2] === 1) address |= 4;
 					if (addressIn[3] === 1) address |= 8;
+
+					// LOGIKA ZGODNA Z DIAGRAMEM (!Q na wyjściu)
+
+					// 1. ZAPIS (Chip Select = 0, Write Enable = 0)
 					if (CS_low === 0 && WE_low === 0) {
 						let dataNibble = 0;
+						// Wejścia D0-D3 nie mają negacji, więc 1 to 1
 						if (dataIn[0] === 1) dataNibble |= 1;
 						if (dataIn[1] === 1) dataNibble |= 2;
 						if (dataIn[2] === 1) dataNibble |= 4;
 						if (dataIn[3] === 1) dataNibble |= 8;
+
 						b.memory[address] = dataNibble;
+
+						// Podczas zapisu wyjścia !Q zazwyczaj wchodzą w stan wysoki (1)
+						// lub pokazują odwrócony zapis. Ustawiamy 1 (nieaktywne/zgaszone logicznie dla active-low).
 						b.outputs.fill(1);
-					} else if (CS_low === 0 && WE_low === 1) {
+					}
+					// 2. ODCZYT (Chip Select = 0, Write Enable = 1)
+					else if (CS_low === 0 && WE_low === 1) {
 						const dataNibble = b.memory[address];
+
+						// Wyjścia są zanegowane (!Q).
+						// Jeśli w pamięci jest 1 -> na wyjściu musi być 0.
+						// Jeśli w pamięci jest 0 -> na wyjściu musi być 1.
 						b.outputs[0] = (dataNibble >> 0) & 1 ? 0 : 1;
 						b.outputs[1] = (dataNibble >> 1) & 1 ? 0 : 1;
 						b.outputs[2] = (dataNibble >> 2) & 1 ? 0 : 1;
 						b.outputs[3] = (dataNibble >> 3) & 1 ? 0 : 1;
-					} else {
+					}
+					// 3. NIEAKTYWNY (Chip Select = 1)
+					else {
+						// Dla wyjść zanegowanych (!Q), stanem nieaktywnym jest zazwyczaj stan wysoki (1).
 						b.outputs.fill(1);
 					}
 					break;
@@ -917,8 +939,15 @@ function App() {
 			inputs: new Array(inputCount).fill(0),
 			outputs: new Array(outputCount).fill(0),
 			...(type === "RAM_16x4" && { memory: new Uint8Array(16) }),
+			...(type === "LABEL" && { label: "Tekst" }),
 		};
 		setBlocks((prev) => evaluateCircuit([...prev, newBlock], connections));
+	};
+
+	const handleLabelChange = (id: number, newLabel: string) => {
+		setBlocks((prevBlocks) =>
+			prevBlocks.map((b) => (b.id === id ? { ...b, label: newLabel } : b))
+		);
 	};
 
 	const handleMove = (
@@ -1193,6 +1222,7 @@ function App() {
 								block={b}
 								onMove={handleMove}
 								onPinClick={handlePinClick}
+								onLabelChange={handleLabelChange}
 								isSelected={
 									selection?.type === "block" &&
 									selection.id === b.id

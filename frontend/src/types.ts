@@ -57,4 +57,5 @@ export type Block = {
 	prevClock?: number;
 	text?: string;
 	memory?: Uint8Array;
+	label?: string;
 };

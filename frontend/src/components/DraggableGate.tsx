@@ -35,6 +35,7 @@ type Props = {
 	isSelected: boolean;
 	onSelect: () => void;
 	onMove: (id: number, x: number, y: number, newOutput?: number) => void;
+	onLabelChange?: (id: number, newLabel: string) => void;
 	onPinClick: (
 		blockId: number,
 		pin: "input" | "output",
@@ -48,6 +49,7 @@ type Props = {
 const DraggableGate: React.FC<Props> = ({
 	block,
 	onMove,
+	onLabelChange,
 	onPinClick,
 	isSelected,
 	onSelect,
@@ -307,10 +309,11 @@ const DraggableGate: React.FC<Props> = ({
 			case "LABEL":
 				return (
 					<LabelBlock
-						text={block.text}
+						text={block.label}
 						onChange={(newText) => {
-							onMove(block.id, block.x, block.y);
-							block.text = newText;
+							if (onLabelChange) {
+								onLabelChange(block.id, newText);
+							}
 						}}
 					/>
 				);
