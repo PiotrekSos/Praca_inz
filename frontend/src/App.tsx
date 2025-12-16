@@ -2,7 +2,7 @@ import { useState } from "react";
 import Toolbox from "./components/Toolbox";
 import DraggableGate from "./components/DraggableGate";
 import EditableWire from "./components/EditableWire";
-import type { Block, Connection, Selection } from "./types.ts";
+import type { Block, Connection, Selection, BlockType } from "./types.ts";
 import { getInputPinPosition, getOutputPinPosition } from "./pinPositions";
 import { exportToImage } from "./utils/exportUtils";
 import { Junctions } from "./components/Junctions";
@@ -52,6 +52,28 @@ function App() {
 			viewport,
 		});
 
+	const handleDrop = (e: React.DragEvent) => {
+		e.preventDefault();
+
+		const type = e.dataTransfer.getData("blockType") as BlockType;
+		if (!type) return;
+
+		const rect = e.currentTarget.getBoundingClientRect();
+
+		const mouseX = e.clientX - rect.left;
+		const mouseY = e.clientY - rect.top;
+
+		const worldX = (mouseX - viewport.x) / viewport.scale;
+		const worldY = (mouseY - viewport.y) / viewport.scale;
+
+		handleAddBlock(type, worldX - 30, worldY - 20);
+	};
+
+	const handleDragOver = (e: React.DragEvent) => {
+		e.preventDefault();
+		e.dataTransfer.dropEffect = "copy";
+	};
+
 	const { handleSave, handleLoad } = useFileHandler({
 		blocks,
 		connections,
@@ -86,6 +108,8 @@ function App() {
 					overflow: "hidden",
 					cursor: isPanning ? "grabbing" : "default",
 				}}
+				onDrop={handleDrop}
+				onDragOver={handleDragOver}
 				onContextMenu={viewportHandlers.onContextMenu}
 				onWheel={viewportHandlers.onWheel}
 				onMouseDown={(e) => {

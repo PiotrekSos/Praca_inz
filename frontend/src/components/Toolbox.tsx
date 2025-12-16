@@ -457,6 +457,15 @@ const Toolbox = ({
 										({ type, component, label }) => (
 											<div
 												key={type}
+												draggable={true}
+												onDragStart={(e) => {
+													e.dataTransfer.setData(
+														"blockType",
+														type
+													);
+													e.dataTransfer.effectAllowed =
+														"copy";
+												}}
 												onClick={() =>
 													onAddGate(type as BlockType)
 												}

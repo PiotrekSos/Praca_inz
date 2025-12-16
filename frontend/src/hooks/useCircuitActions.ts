@@ -29,18 +29,26 @@ export const useCircuitActions = ({
 	viewport,
 }: UseCircuitActionsProps) => {
 	const handleAddBlock = useCallback(
-		(type: BlockType) => {
+		(type: BlockType, x?: number, y?: number) => {
 			const { inputCount, outputCount } = getBlockConfig(type);
+
+			const finalX =
+				x !== undefined
+					? x
+					: (200 - viewport.x) / viewport.scale +
+					  (blocks.length % 10) * 40;
+
+			const finalY =
+				y !== undefined
+					? y
+					: (100 - viewport.y) / viewport.scale +
+					  (blocks.length % 10) * 40;
 
 			const newBlock: Block = {
 				id: Math.max(0, ...blocks.map((b) => b.id)) + 1,
 				type,
-				x:
-					(200 - viewport.x) / viewport.scale +
-					(blocks.length % 10) * 40,
-				y:
-					(100 - viewport.y) / viewport.scale +
-					(blocks.length % 10) * 40,
+				x: finalX,
+				y: finalY,
 				inputs: new Array(inputCount).fill(0),
 				outputs: new Array(outputCount).fill(0),
 				...(type === "RAM_16x4" && { memory: new Uint8Array(16) }),
