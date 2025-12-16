@@ -23,6 +23,8 @@ function App() {
 	const [showColors, setShowColors] = useState(true);
 	const [circuitVersion, setCircuitVersion] = useState(0);
 
+	const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+
 	const {
 		viewport,
 		setViewport,
@@ -120,6 +122,14 @@ function App() {
 				}}
 				onMouseMove={(e) => {
 					viewportHandlers.onMouseMove(e);
+					const rect = e.currentTarget.getBoundingClientRect();
+					const mouseX = e.clientX - rect.left;
+					const mouseY = e.clientY - rect.top;
+
+					const worldX = (mouseX - viewport.x) / viewport.scale;
+					const worldY = (mouseY - viewport.y) / viewport.scale;
+
+					setCursorPos({ x: worldX, y: worldY });
 				}}
 				onMouseUp={viewportHandlers.onMouseUp}
 				onMouseLeave={viewportHandlers.onMouseLeave}
@@ -214,6 +224,34 @@ function App() {
 								/>
 							);
 						})}
+
+						{pending.from &&
+							(() => {
+								const sourceBlock = blocks.find(
+									(b) => b.id === pending.from!.blockId
+								);
+								if (sourceBlock) {
+									const pinPos = getOutputPinPosition(
+										sourceBlock,
+										pending.from.outputIndex ?? 0
+									);
+									return (
+										<line
+											x1={pinPos.x}
+											y1={pinPos.y}
+											x2={cursorPos.x}
+											y2={cursorPos.y}
+											stroke="#666"
+											strokeWidth={2}
+											strokeDasharray="5,5"
+											opacity={0.6}
+											pointerEvents="none"
+										/>
+									);
+								}
+								return null;
+							})()}
+
 						<Junctions
 							connections={connections}
 							blocks={blocks}
