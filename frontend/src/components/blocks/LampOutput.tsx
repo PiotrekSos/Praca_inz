@@ -12,7 +12,7 @@ const LampOutput: React.FC<Props> = ({ isOn = false, showColors = true }) => {
 	// W trybie mono: ON = ciemny szary/czarny, OFF = biały
 	const bulbFill = showColors
 		? isOn
-			? "yellow"
+			? "#FAEE00"
 			: "white"
 		: isOn
 		? "#333"
@@ -34,7 +34,15 @@ const LampOutput: React.FC<Props> = ({ isOn = false, showColors = true }) => {
 				cx="50"
 				cy="30"
 				r="10"
-				fill={showColors ? "#f8f8f8" : isOn ? "#555" : "#fff"} // Środek też ciemnieje
+				fill={
+					showColors
+						? isOn
+							? "#fad900ff"
+							: "white"
+						: isOn
+						? "#333"
+						: "white"
+				} // Środek też ciemnieje
 				stroke={bodyColor}
 				strokeWidth="1.5"
 			/>

@@ -106,7 +106,7 @@ function App() {
 				style={{
 					flex: 1,
 					position: "relative",
-					background: "#f0f0f0",
+					background: "#ffffffff",
 					overflow: "hidden",
 					cursor: isPanning ? "grabbing" : "default",
 				}}
