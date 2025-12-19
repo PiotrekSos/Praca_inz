@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Toolbox from "./components/Toolbox";
 import DraggableGate from "./components/DraggableGate";
 import EditableWire from "./components/EditableWire";
@@ -12,6 +12,7 @@ import { useFileHandler } from "./hooks/useFileHandler";
 import { useViewport } from "./hooks/useViewport";
 import { useCircuitActions } from "./hooks/useCircuitActions";
 import { useSimulation } from "./hooks/useSimulation";
+import { RamEditor } from "./components/modals/RamEditor";
 
 function App() {
 	const [blocks, setBlocks] = useState<Block[]>([]);
@@ -24,6 +25,65 @@ function App() {
 	const [circuitVersion, setCircuitVersion] = useState(0);
 
 	const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+
+	const [editingBlockId, setEditingBlockId] = useState<number | null>(null);
+
+	const handleSaveRamData = (blockId: number, newMemory: Uint8Array) => {
+		setBlocks((prev) =>
+			prev.map((b) => {
+				if (b.id === blockId) {
+					return { ...b, memory: newMemory };
+				}
+				return b;
+			})
+		);
+	};
+
+	// 2. NOWY KOD: Obsługa klawisza ENTER
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			// Logowanie dla celów diagnostycznych
+			if (e.key === "Enter") {
+				console.log(
+					"Wciśnięto Enter. Aktualne zaznaczenie:",
+					selection
+				);
+
+				if (selection?.type === "block") {
+					const selectedBlock = blocks.find(
+						(b) => b.id === selection.id
+					);
+					console.log("Znaleziony blok:", selectedBlock);
+
+					if (selectedBlock) {
+						console.log("Typ bloku:", selectedBlock.type);
+
+						// Sprawdzamy czy nazwa typu zawiera "RAM" (ignorujemy wielkość liter i dokładną nazwę)
+						if (
+							String(selectedBlock.type)
+								.toUpperCase()
+								.includes("RAM")
+						) {
+							console.log("To jest RAM! Otwieram edytor...");
+							e.preventDefault();
+							setEditingBlockId(selectedBlock.id);
+						} else {
+							console.log(
+								"To NIE jest RAM (albo nazwa typu się nie zgadza)."
+							);
+						}
+					}
+				} else {
+					console.log(
+						"Nic nie jest zaznaczone lub zaznaczenie nie jest blokiem."
+					);
+				}
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [selection, blocks]);
 
 	const {
 		viewport,
@@ -286,6 +346,13 @@ function App() {
 					))}
 				</div>
 			</div>
+			{editingBlockId && (
+				<RamEditor
+					block={blocks.find((b) => b.id === editingBlockId)!}
+					onClose={() => setEditingBlockId(null)}
+					onSave={handleSaveRamData}
+				/>
+			)}
 		</div>
 	);
 }

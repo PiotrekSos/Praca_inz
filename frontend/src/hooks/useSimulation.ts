@@ -37,9 +37,14 @@ export const useSimulation = ({
 			// Walidacja
 			for (const block of blocks) {
 				if (
-					["ONE", "ZERO", "TOGGLE", "CLOCK", "LABEL"].includes(
-						block.type
-					)
+					[
+						"ONE",
+						"ZERO",
+						"TOGGLE",
+						"CLOCK",
+						"LABEL",
+						"RAM_16x4",
+					].includes(block.type)
 				)
 					continue;
 				for (let i = 0; i < block.inputs.length; i++) {
