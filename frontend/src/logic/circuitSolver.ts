@@ -123,11 +123,30 @@ export const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					break;
 				}
 				case "SR_FLIPFLOP": {
-					const [S, R] = b.inputs;
-					if (S === 1 && R === 0) b.state = 1;
-					else if (S === 0 && R === 1) b.state = 0;
+					// Pobieramy 3 wejścia: S, R oraz Zegar (CLK)
+					const [S, R, CLK] = b.inputs;
+
+					// Inicjalizacja stanu, jeśli nie istnieje
+					if (!("state" in b)) b.state = 0;
+					if (!("prevClock" in b)) b.prevClock = 0;
+
+					// Logika synchroniczna - reagujemy tylko na zbocze narastające zegara (0 -> 1)
+					if (CLK === 1 && b.prevClock === 0) {
+						if (S === 1 && R === 0) {
+							b.state = 1; // Set
+						} else if (S === 0 && R === 1) {
+							b.state = 0; // Reset
+						}
+						// Jeśli S=0, R=0 -> Pamięć (bez zmian)
+						// Jeśli S=1, R=1 -> Stan zabroniony (w symulacji traktujemy jako brak zmian)
+					}
+
+					// Aktualizacja wyjść
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
+
+					// Zapamiętanie stanu zegara dla następnego cyklu
+					b.prevClock = CLK;
 					break;
 				}
 
