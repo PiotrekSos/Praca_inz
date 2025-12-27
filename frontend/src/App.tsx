@@ -211,6 +211,32 @@ function App() {
 						pointerEvents: "none",
 					}}
 				>
+					{/* Bramki (Wewnątrz circuit-board) */}
+					{blocks.map((b) => (
+						<div
+							key={`${circuitVersion}-${b.id}`}
+							style={{ pointerEvents: "all" }}
+						>
+							{" "}
+							<DraggableGate
+								block={b}
+								onMove={handleMove}
+								onPinClick={handlePinClick}
+								onLabelChange={handleLabelChange}
+								isSelected={
+									selection?.type === "block" &&
+									selection.id === b.id
+								}
+								onSelect={() =>
+									setSelection({ type: "block", id: b.id })
+								}
+								scale={viewport.scale}
+								isSimulationRunning={isSimulationRunning}
+								showColors={showColors}
+							/>
+						</div>
+					))}
+
 					{/* SVG z liniami (Wewnątrz circuit-board) */}
 					<svg
 						style={{
@@ -219,8 +245,9 @@ function App() {
 							top: 0,
 							width: "100%",
 							height: "100%",
-							pointerEvents: "all",
+							pointerEvents: "none",
 							overflow: "visible",
+							zIndex: 2,
 						}}
 					>
 						{connections.map((c, i) => {
@@ -320,32 +347,6 @@ function App() {
 							showColors={showColors}
 						/>
 					</svg>
-
-					{/* Bramki (Wewnątrz circuit-board) */}
-					{blocks.map((b) => (
-						<div
-							key={`${circuitVersion}-${b.id}`}
-							style={{ pointerEvents: "all" }}
-						>
-							{" "}
-							<DraggableGate
-								block={b}
-								onMove={handleMove}
-								onPinClick={handlePinClick}
-								onLabelChange={handleLabelChange}
-								isSelected={
-									selection?.type === "block" &&
-									selection.id === b.id
-								}
-								onSelect={() =>
-									setSelection({ type: "block", id: b.id })
-								}
-								scale={viewport.scale}
-								isSimulationRunning={isSimulationRunning}
-								showColors={showColors}
-							/>
-						</div>
-					))}
 				</div>
 			</div>
 			{editingBlockId && (
