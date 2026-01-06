@@ -41,16 +41,9 @@ function App() {
 		);
 	};
 
-	// 2. NOWY KOD: Obsługa klawisza ENTER
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
-			// Logowanie dla celów diagnostycznych
 			if (e.key === "Enter") {
-				console.log(
-					"Wciśnięto Enter. Aktualne zaznaczenie:",
-					selection
-				);
-
 				if (selection?.type === "block") {
 					const selectedBlock = blocks.find(
 						(b) => b.id === selection.id
@@ -60,7 +53,6 @@ function App() {
 					if (selectedBlock) {
 						console.log("Typ bloku:", selectedBlock.type);
 
-						// Sprawdzamy czy nazwa typu zawiera "RAM" (ignorujemy wielkość liter i dokładną nazwę)
 						if (
 							String(selectedBlock.type)
 								.toUpperCase()
