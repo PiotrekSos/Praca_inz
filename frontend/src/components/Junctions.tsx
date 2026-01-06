@@ -5,7 +5,7 @@ import { getInputPinPosition, getOutputPinPosition } from "../pinPositions";
 interface JunctionsProps {
 	connections: Connection[];
 	blocks: Block[];
-	showColors: boolean; // <--- NOWY PROP
+	showColors: boolean;
 }
 
 // Funkcja pomocnicza: sprawdza czy punkt p leży na odcinku a-b
@@ -43,11 +43,10 @@ export const Junctions: React.FC<JunctionsProps> = ({
 }) => {
 	const dots = useMemo(() => {
 		const pinLocations = new Set<string>();
-		// Zmieniamy Set na Map, żeby przechowywać też stan logiczny (isHigh)
-		// Klucz: "x,y", Wartość: boolean (true = high, false = low)
+		// Mapa kropkek: Klucz "x,y" -> isHigh (boolean)
 		const junctions = new Map<string, boolean>();
 
-		// 1. Zbieramy lokalizacje pinów
+		// 1. Zbieramy lokalizacje pinów (żeby nie stawiać kropki na samym pinie)
 		blocks.forEach((b) => {
 			b.inputs.forEach((_, idx) => {
 				const p = getInputPinPosition(b, idx);
@@ -59,82 +58,102 @@ export const Junctions: React.FC<JunctionsProps> = ({
 			});
 		});
 
-		// 2. Dane do obliczeń
-		const allSegments: {
-			p1: { x: number; y: number };
-			p2: { x: number; y: number };
-			connIndex: number;
-		}[] = [];
+		// 2. Grupujemy połączenia według źródła sygnału
+		// Klucz: "blockId:outputIndex", Wartość: Lista połączeń z tego źródła
+		const netGroups = new Map<string, Connection[]>();
 
-		const allPoints: { x: number; y: number; connIndex: number }[] = [];
-
-		connections.forEach((conn, i) => {
-			const fromBlock = blocks.find((b) => b.id === conn.from.blockId);
-			const toBlock = blocks.find((b) => b.id === conn.to.blockId);
-			if (!fromBlock || !toBlock) return;
-
-			const start = getOutputPinPosition(
-				fromBlock,
+		connections.forEach((conn) => {
+			const sourceKey = `${conn.from.blockId}:${
 				conn.from.outputIndex ?? 0
-			);
-			const end = getInputPinPosition(toBlock, conn.to.inputIndex) || {
-				x: 0,
-				y: 0,
-			};
-
-			const points = [start, ...(conn.points || []), end];
-
-			points.forEach((p) => {
-				allPoints.push({ x: p.x, y: p.y, connIndex: i });
-			});
-
-			for (let j = 0; j < points.length - 1; j++) {
-				allSegments.push({
-					p1: points[j],
-					p2: points[j + 1],
-					connIndex: i,
-				});
+			}`;
+			if (!netGroups.has(sourceKey)) {
+				netGroups.set(sourceKey, []);
 			}
+			netGroups.get(sourceKey)!.push(conn);
 		});
 
-		// Pomocnicza funkcja do sprawdzania stanu logicznego kabla
-		const getWireState = (connIndex: number) => {
-			const conn = connections[connIndex];
-			if (!conn) return false;
-			const block = blocks.find((b) => b.id === conn.from.blockId);
-			// Pobieramy stan wyjścia, z którego wychodzi kabel
-			return block?.outputs[conn.from.outputIndex ?? 0] === 1;
-		};
+		// 3. Analizujemy każdą sieć (grupę) osobno
+		netGroups.forEach((groupConns, sourceKey) => {
+			// Pobieramy stan logiczny dla całej tej sieci (wszystkie kropki w tej sieci będą miały ten sam kolor)
+			const [blockIdStr, outputIdxStr] = sourceKey.split(":");
+			const sourceBlock = blocks.find((b) => b.id === Number(blockIdStr));
+			const isHigh = sourceBlock?.outputs[Number(outputIdxStr)] === 1;
 
-		// 3. Sprawdzamy przecięcia
-		allPoints.forEach((point) => {
-			const key = `${point.x},${point.y}`;
+			// Zbieramy wszystkie segmenty i punkty w obrębie tej jednej sieci
+			const groupSegments: {
+				p1: { x: number; y: number };
+				p2: { x: number; y: number };
+				connIndex: number; // lokalny index w grupie
+			}[] = [];
 
-			if (pinLocations.has(key)) return;
-			if (junctions.has(key)) return;
+			const groupPoints: { x: number; y: number; connIndex: number }[] =
+				[];
 
-			const hitsOtherWire = allSegments.some((seg) => {
-				if (seg.connIndex === point.connIndex) return false;
-				return isPointOnSegment(point, seg.p1, seg.p2);
-			});
-
-			if (hitsOtherWire) {
-				// Jeśli wykryliśmy łączenie, pobieramy stan logiczny tego punktu
-				junctions.set(key, getWireState(point.connIndex));
-			} else {
-				const isSharedPoint = allPoints.some(
-					(otherP) =>
-						otherP.connIndex !== point.connIndex &&
-						otherP.x === point.x &&
-						otherP.y === point.y
+			groupConns.forEach((conn, i) => {
+				const fromBlock = blocks.find(
+					(b) => b.id === conn.from.blockId
 				);
-				if (isSharedPoint) {
-					junctions.set(key, getWireState(point.connIndex));
+				const toBlock = blocks.find((b) => b.id === conn.to.blockId);
+				if (!fromBlock || !toBlock) return;
+
+				const start = getOutputPinPosition(
+					fromBlock,
+					conn.from.outputIndex ?? 0
+				);
+				const end = getInputPinPosition(
+					toBlock,
+					conn.to.inputIndex
+				) || {
+					x: 0,
+					y: 0,
+				};
+
+				const points = [start, ...(conn.points || []), end];
+
+				points.forEach((p) => {
+					groupPoints.push({ x: p.x, y: p.y, connIndex: i });
+				});
+
+				for (let j = 0; j < points.length - 1; j++) {
+					groupSegments.push({
+						p1: points[j],
+						p2: points[j + 1],
+						connIndex: i,
+					});
 				}
-			}
+			});
+
+			// Sprawdzamy przecięcia TYLKO wewnątrz tej grupy
+			groupPoints.forEach((point) => {
+				const key = `${point.x},${point.y}`;
+
+				if (pinLocations.has(key)) return;
+				if (junctions.has(key)) return; // Już dodana
+
+				// Czy ten punkt leży na jakimś innym segmencie TEJ SAMEJ sieci?
+				const hitsWireWithinNet = groupSegments.some((seg) => {
+					// Ignorujemy segmenty należące do tego samego fizycznego połączenia (chyba że robi pętlę, ale to rzadkość)
+					if (seg.connIndex === point.connIndex) return false;
+					return isPointOnSegment(point, seg.p1, seg.p2);
+				});
+
+				if (hitsWireWithinNet) {
+					junctions.set(key, isHigh);
+				} else {
+					// Sprawdzamy czy to punkt wspólny (węzeł) dwóch linii w tej samej sieci
+					const isSharedNode = groupPoints.some(
+						(otherP) =>
+							otherP.connIndex !== point.connIndex &&
+							otherP.x === point.x &&
+							otherP.y === point.y
+					);
+					if (isSharedNode) {
+						junctions.set(key, isHigh);
+					}
+				}
+			});
 		});
 
-		// Konwersja Mapy na tablicę obiektów
 		return Array.from(junctions.entries()).map(([key, isHigh]) => {
 			const [x, y] = key.split(",").map(Number);
 			return { x, y, isHigh };
@@ -144,13 +163,11 @@ export const Junctions: React.FC<JunctionsProps> = ({
 	return (
 		<>
 			{dots.map((dot, i) => {
-				// Logika kolorów
-				let fillColor = "#000"; // Domyślny czarny
+				let fillColor = "#000"; // Domyślny czarny (tryb czarno-biały)
 
 				if (showColors) {
-					// Jeśli włączone kolory: Zielony dla High, Czarny/Szary dla Low
-					// (Możesz zmienić 'green' na dowolny kolor np. '#00AA00')
-					fillColor = dot.isHigh ? "green" : "#1976d2";
+					// Zielony dla High, szary/niebieski dla Low (zgodnie z konwencją w EditableWire)
+					fillColor = dot.isHigh ? "#00AA00" : "#1976d2"; // Ujednoliciłem kolory
 				}
 
 				return (
@@ -158,7 +175,7 @@ export const Junctions: React.FC<JunctionsProps> = ({
 						key={`junction-${i}`}
 						cx={dot.x}
 						cy={dot.y}
-						r={5}
+						r={4} // Zmniejszyłem lekko kropkę dla estetyki (było 5)
 						fill={fillColor}
 						style={{
 							pointerEvents: "none",
