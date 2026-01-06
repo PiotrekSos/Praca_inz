@@ -17,12 +17,15 @@ export const exportToImage = async (
 	let maxX = -Infinity;
 	let maxY = -Infinity;
 
-	blocks.forEach((b) => {
-		const { w, h } = getBlockDimensions(b.type);
-		if (b.x < minX) minX = b.x;
-		if (b.y < minY) minY = b.y;
-		if (b.x + w > maxX) maxX = b.x + w;
-		if (b.y + h > maxY) maxY = b.y + h;
+	blocks.forEach((block) => {
+		const defaultDims = getBlockDimensions(block.type);
+		const w = block.size?.width ?? defaultDims.w;
+		const h = block.size?.height ?? defaultDims.h;
+
+		minX = Math.min(minX, block.x);
+		minY = Math.min(minY, block.y);
+		maxX = Math.max(maxX, block.x + w);
+		maxY = Math.max(maxY, block.y + h);
 	});
 
 	connections.forEach((c) => {

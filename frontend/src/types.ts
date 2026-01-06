@@ -58,6 +58,7 @@ export type Block = {
 	text?: string;
 	memory?: Uint8Array;
 	label?: string;
+	size?: { width: number; height: number };
 };
 
 export interface JsonBlock extends Omit<Block, "memory"> {

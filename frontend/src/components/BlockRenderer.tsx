@@ -37,6 +37,8 @@ interface BlockRendererProps {
 	isSimulationRunning: boolean;
 	onMove: (id: number, x: number, y: number, newOutput?: number) => void;
 	onLabelChange?: (id: number, text: string) => void;
+	onResize?: (id: number, width: number, height: number) => void;
+	isSelected?: boolean;
 }
 
 export const BlockRenderer: React.FC<BlockRendererProps> = ({
@@ -45,6 +47,8 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
 	isSimulationRunning,
 	onMove,
 	onLabelChange,
+	onResize,
+	isSelected,
 }) => {
 	switch (block.type) {
 		case "BUFFER":
@@ -246,9 +250,11 @@ export const BlockRenderer: React.FC<BlockRendererProps> = ({
 			return (
 				<LabelBlock
 					text={block.label}
-					onChange={(newText) =>
-						onLabelChange && onLabelChange(block.id, newText)
-					}
+					width={block.size?.width ?? 100}
+					height={block.size?.height ?? 40}
+					onChange={(newLabel) => onLabelChange?.(block.id, newLabel)}
+					onResize={(w, h) => onResize?.(block.id, w, h)}
+					isSelected={isSelected}
 				/>
 			);
 		default:

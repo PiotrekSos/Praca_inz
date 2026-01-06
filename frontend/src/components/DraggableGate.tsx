@@ -10,6 +10,7 @@ type Props = {
 	onSelect: () => void;
 	onMove: (id: number, x: number, y: number, newOutput?: number) => void;
 	onLabelChange?: (id: number, newLabel: string) => void;
+	onResize?: (id: number, width: number, height: number) => void;
 	onPinClick: (
 		blockId: number,
 		pin: "input" | "output",
@@ -24,6 +25,7 @@ const DraggableGate: React.FC<Props> = ({
 	block,
 	onMove,
 	onLabelChange,
+	onResize,
 	onPinClick,
 	isSelected,
 	onSelect,
@@ -33,6 +35,10 @@ const DraggableGate: React.FC<Props> = ({
 }) => {
 	const [dragging, setDragging] = useState(false);
 	const dragStartRef = useRef({ mouseX: 0, mouseY: 0, blockX: 0, blockY: 0 });
+
+	const { w: defaultW, h: defaultH } = getBlockDimensions(block.type);
+	const finalWidth = block.size?.width ?? defaultW;
+	const finalHeight = block.size?.height ?? defaultH;
 
 	const handleMouseDown = (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -72,7 +78,6 @@ const DraggableGate: React.FC<Props> = ({
 	}, [dragging, block.id, onMove, scale]);
 
 	const pins = getBlockPinLayout(block);
-	const { w, h } = getBlockDimensions(block.type);
 
 	return (
 		<div
@@ -88,8 +93,8 @@ const DraggableGate: React.FC<Props> = ({
 					: "none",
 				zIndex: isSelected ? 1000 : 1,
 				borderRadius: "4px",
-				width: w,
-				height: h,
+				width: finalWidth,
+				height: finalHeight,
 			}}
 		>
 			<BlockRenderer
@@ -98,6 +103,8 @@ const DraggableGate: React.FC<Props> = ({
 				isSimulationRunning={isSimulationRunning}
 				onMove={onMove}
 				onLabelChange={onLabelChange}
+				onResize={onResize}
+				isSelected={isSelected}
 			/>
 
 			{/* Renderowanie Pinów z Konfiguracji */}

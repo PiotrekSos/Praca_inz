@@ -92,6 +92,17 @@ export const useCircuitActions = ({
 		[setBlocks]
 	);
 
+	const resizeBlock = useCallback(
+		(id: number, width: number, height: number) => {
+			setBlocks((prev) =>
+				prev.map((b) =>
+					b.id === id ? { ...b, size: { width, height } } : b
+				)
+			);
+		},
+		[setBlocks]
+	);
+
 	const handlePinClick = useCallback(
 		(blockId: number, pin: "input" | "output", index?: number) => {
 			if (pin === "output" && !pending.from) {
@@ -177,5 +188,11 @@ export const useCircuitActions = ({
 		setSelection,
 	]);
 
-	return { handleAddBlock, handleMove, handleLabelChange, handlePinClick };
+	return {
+		handleAddBlock,
+		handleMove,
+		handleLabelChange,
+		handlePinClick,
+		resizeBlock,
+	};
 };

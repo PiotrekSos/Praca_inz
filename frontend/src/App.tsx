@@ -104,18 +104,23 @@ function App() {
 			connections,
 		});
 
-	const { handleAddBlock, handleMove, handleLabelChange, handlePinClick } =
-		useCircuitActions({
-			blocks,
-			setBlocks,
-			connections,
-			setConnections,
-			selection,
-			setSelection,
-			pending,
-			setPending,
-			viewport,
-		});
+	const {
+		handleAddBlock,
+		handleMove,
+		handleLabelChange,
+		handlePinClick,
+		resizeBlock,
+	} = useCircuitActions({
+		blocks,
+		setBlocks,
+		connections,
+		setConnections,
+		selection,
+		setSelection,
+		pending,
+		setPending,
+		viewport,
+	});
 
 	const handleDrop = (e: React.DragEvent) => {
 		e.preventDefault();
@@ -224,6 +229,7 @@ function App() {
 								onMove={handleMove}
 								onPinClick={handlePinClick}
 								onLabelChange={handleLabelChange}
+								onResize={resizeBlock}
 								isSelected={
 									selection?.type === "block" &&
 									selection.id === b.id
