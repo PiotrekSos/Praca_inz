@@ -3,7 +3,7 @@ import React from "react";
 interface AndGateProps {
 	inputs?: number[];
 	outputs?: number[];
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 }
 
 const AndGate: React.FC<AndGateProps> = ({
@@ -11,7 +11,6 @@ const AndGate: React.FC<AndGateProps> = ({
 	outputs = [],
 	showColors = true,
 }) => {
-	// Funkcja pomocnicza do kolorów
 	const getColor = (val: number | undefined) =>
 		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
 
@@ -19,7 +18,6 @@ const AndGate: React.FC<AndGateProps> = ({
 
 	return (
 		<svg width="100" height="60">
-			{/* --- linie wejściowe --- */}
 			<line
 				x1="0"
 				y1="20"
@@ -44,7 +42,6 @@ const AndGate: React.FC<AndGateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* --- linia wyjściowa --- */}
 			<line
 				x1="80"
 				y1="30"

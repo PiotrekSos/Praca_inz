@@ -3,7 +3,7 @@ import React from "react";
 interface BufferGateProps {
 	inputs?: number[];
 	outputs?: number[];
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 }
 
 const BufferGate: React.FC<BufferGateProps> = ({
@@ -18,7 +18,6 @@ const BufferGate: React.FC<BufferGateProps> = ({
 
 	return (
 		<svg width="100" height="60">
-			{/* Linia wejściowa */}
 			<line
 				x1="0"
 				y1="30"
@@ -28,7 +27,6 @@ const BufferGate: React.FC<BufferGateProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* Kształt bramki */}
 			<polygon
 				points="20,6 68,30 20,54"
 				fill="white"
@@ -36,7 +34,6 @@ const BufferGate: React.FC<BufferGateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Linia wyjściowa */}
 			<line
 				x1="68"
 				y1="30"

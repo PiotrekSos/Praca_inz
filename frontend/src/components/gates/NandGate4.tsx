@@ -3,7 +3,7 @@ import React from "react";
 interface NandGate4Props {
 	inputs?: number[];
 	outputs?: number[];
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 }
 
 const NandGate4: React.FC<NandGate4Props> = ({
@@ -17,7 +17,6 @@ const NandGate4: React.FC<NandGate4Props> = ({
 
 	return (
 		<svg width="140" height="100">
-			{/* Linie wejściowe */}
 			{[0, 1, 2, 3].map((i) => (
 				<line
 					key={i}
@@ -30,7 +29,6 @@ const NandGate4: React.FC<NandGate4Props> = ({
 				/>
 			))}
 
-			{/* Kształt bramki NAND (szerszy dla 4 wejść) */}
 			<path
 				d="M20,15 H60 A30,30 0 0,1 60,85 H20 Z"
 				fill="white"
@@ -38,7 +36,6 @@ const NandGate4: React.FC<NandGate4Props> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Bańka negacji */}
 			<circle
 				cx="100"
 				cy="50"
@@ -48,7 +45,6 @@ const NandGate4: React.FC<NandGate4Props> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Linia wyjściowa */}
 			<line
 				x1="105"
 				y1="50"

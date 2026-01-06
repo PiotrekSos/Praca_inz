@@ -5,7 +5,6 @@ interface Props {
 }
 
 const ConstOne: React.FC<Props> = ({ showColors = true }) => {
-	// Logika kolorów
 	const bodyColor = showColors ? "#1976d2" : "black";
 	const outputColor = showColors ? "green" : "black";
 
@@ -17,7 +16,7 @@ const ConstOne: React.FC<Props> = ({ showColors = true }) => {
 				width="60"
 				height="40"
 				fill="white"
-				stroke={bodyColor} // Użycie zmiennej
+				stroke={bodyColor}
 				strokeWidth="2"
 				rx="6"
 			/>
@@ -26,20 +25,19 @@ const ConstOne: React.FC<Props> = ({ showColors = true }) => {
 				y="38"
 				fontSize="20"
 				textAnchor="middle"
-				fill={bodyColor} // Użycie zmiennej
+				fill={bodyColor}
 				fontWeight="bold"
-				style={{ userSelect: "none" }} // Dodatkowo: blokada zaznaczania tekstu
+				style={{ userSelect: "none" }}
 			>
 				1
 			</text>
 
-			{/* nóżka wyjściowa */}
 			<line
 				x1="80"
 				y1="30"
 				x2="100"
 				y2="30"
-				stroke={outputColor} // Użycie zmiennej
+				stroke={outputColor}
 				strokeWidth="3"
 			/>
 		</svg>

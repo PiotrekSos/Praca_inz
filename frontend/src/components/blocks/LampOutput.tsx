@@ -2,14 +2,12 @@ import React from "react";
 
 type Props = {
 	isOn?: boolean;
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 };
 
 const LampOutput: React.FC<Props> = ({ isOn = false, showColors = true }) => {
-	// Logika kolorów
 	const bodyColor = showColors ? "#1976d2" : "black";
 
-	// W trybie mono: ON = ciemny szary/czarny, OFF = biały
 	const bulbFill = showColors
 		? isOn
 			? "#FAEE00"
@@ -42,12 +40,11 @@ const LampOutput: React.FC<Props> = ({ isOn = false, showColors = true }) => {
 						: isOn
 						? "#333"
 						: "white"
-				} // Środek też ciemnieje
+				}
 				stroke={bodyColor}
 				strokeWidth="1.5"
 			/>
 
-			{/* nóżka wejściowa */}
 			<line
 				x1="0"
 				y1="30"

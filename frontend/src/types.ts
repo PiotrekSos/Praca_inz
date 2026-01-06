@@ -13,7 +13,6 @@ export type Connection = {
 		pin: "input";
 		inputIndex: number;
 	};
-	// nowe pole:
 	points?: { x: number; y: number }[];
 };
 

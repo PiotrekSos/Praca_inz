@@ -18,7 +18,6 @@ const SRFlipFlop: React.FC<FlipFlopProps> = ({
 
 	return (
 		<svg width="120" height="100">
-			{/* Linie wejściowe */}
 			<line
 				x1="10"
 				y1="35"
@@ -44,7 +43,6 @@ const SRFlipFlop: React.FC<FlipFlopProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* Prostokąt */}
 			<rect
 				x="30"
 				y="20"
@@ -56,7 +54,6 @@ const SRFlipFlop: React.FC<FlipFlopProps> = ({
 				rx="6"
 			/>
 
-			{/* Etykiety wejść */}
 			<text
 				x="35"
 				y="35"
@@ -85,7 +82,6 @@ const SRFlipFlop: React.FC<FlipFlopProps> = ({
 				CLK
 			</text>
 
-			{/* Linie wyjściowe */}
 			<line
 				x1="90"
 				y1="35"
@@ -103,7 +99,6 @@ const SRFlipFlop: React.FC<FlipFlopProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* Etykiety wyjść */}
 			<text
 				x="78"
 				y="35"

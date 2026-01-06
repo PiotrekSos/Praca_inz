@@ -34,7 +34,6 @@ export const useSimulation = ({
 		if (isSimulationRunning) {
 			setIsSimulationRunning(false);
 		} else {
-			// Walidacja
 			for (const block of blocks) {
 				if (
 					[
@@ -64,7 +63,6 @@ export const useSimulation = ({
 		}
 	}, [isSimulationRunning, blocks, connections]);
 
-	// Interval
 	useEffect(() => {
 		if (!isSimulationRunning) return;
 		const interval = setInterval(() => {

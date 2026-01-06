@@ -107,7 +107,6 @@ const DraggableGate: React.FC<Props> = ({
 				isSelected={isSelected}
 			/>
 
-			{/* Renderowanie Pinów z Konfiguracji */}
 			{pins.map((pin) => (
 				<div
 					key={`${pin.type}-${pin.index}`}

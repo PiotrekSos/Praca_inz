@@ -1,10 +1,8 @@
 import React from "react";
 import type { Block } from "../types";
 
-// Importy wszystkich bramek...
 import BufferGate from "./gates/BufferGate";
 import NotGate from "./gates/NotGate";
-// ... (Wklej tutaj wszystkie importy bramek z DraggableGate)
 import AndGate from "./gates/AndGate";
 import OrGate from "./gates/OrGate";
 import XorGate from "./gates/XorGate";

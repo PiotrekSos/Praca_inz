@@ -3,7 +3,7 @@ import React from "react";
 interface GateProps {
 	inputs?: number[];
 	outputs?: number[];
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 }
 
 const Mux4: React.FC<GateProps> = ({
@@ -11,14 +11,12 @@ const Mux4: React.FC<GateProps> = ({
 	outputs = [],
 	showColors = true,
 }) => {
-	// Logika kolorów
 	const getColor = (val: number | undefined) =>
 		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
 	const bodyColor = showColors ? "#1976d2" : "black";
 
 	return (
 		<svg width="120" height="110">
-			{/* Obudowa */}
 			<rect
 				x="25"
 				y="10"
@@ -30,7 +28,6 @@ const Mux4: React.FC<GateProps> = ({
 				rx="6"
 			/>
 
-			{/* Linie wejściowe danych (D0-D3) */}
 			{[0, 1, 2, 3].map((i) => (
 				<line
 					key={i}
@@ -43,7 +40,6 @@ const Mux4: React.FC<GateProps> = ({
 				/>
 			))}
 
-			{/* Wejścia sterujące (A0, A1) */}
 			<line
 				x1="50"
 				y1="0"
@@ -61,7 +57,6 @@ const Mux4: React.FC<GateProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* Linia Enable (!E) - DÓŁ */}
 			<line
 				x1="60"
 				y1="110"
@@ -79,7 +74,6 @@ const Mux4: React.FC<GateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Linie wyjściowe */}
 			<line
 				x1="95"
 				y1="50"
@@ -98,7 +92,6 @@ const Mux4: React.FC<GateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Etykiety wejść */}
 			{[0, 1, 2, 3].map((i) => (
 				<text
 					key={`lbl${i}`}
@@ -113,7 +106,6 @@ const Mux4: React.FC<GateProps> = ({
 				</text>
 			))}
 
-			{/* Etykieta wyjścia */}
 			<text
 				x="80"
 				y="53"
@@ -125,7 +117,6 @@ const Mux4: React.FC<GateProps> = ({
 				!Y
 			</text>
 
-			{/* Etykiety sterujące */}
 			<text
 				x="45"
 				y="20"

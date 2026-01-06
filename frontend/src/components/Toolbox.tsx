@@ -41,9 +41,7 @@ import Demux4 from "./gates/Demux4";
 import Ram16x4 from "./blocks/Ram16x4";
 import type { BlockType, Block, Connection } from "../types";
 
-// ... (categories i ScaledPreview bez zmian) ...
 const categories = [
-	// ... (skopiuj kategorie z poprzedniej wersji, są długie) ...
 	{
 		name: "Wejścia",
 		items: [
@@ -137,16 +135,13 @@ const ScaledPreview = ({
 	const contentRef = useRef<HTMLDivElement>(null);
 	const [scale, setScale] = useState(1);
 
-	// Uruchamiamy to tylko gdy zmieni się komponent lub wymiary kontenera
 	useEffect(() => {
 		const updateScale = () => {
 			if (!containerRef.current || !contentRef.current) return;
 
-			// Pobieramy wymiary
 			const cBox = containerRef.current.getBoundingClientRect();
 			const iBox = contentRef.current.getBoundingClientRect();
 
-			// Zabezpieczenie przed dzieleniem przez 0, jeśli element się jeszcze nie wyrenderował
 			if (iBox.width === 0 || iBox.height === 0) return;
 
 			const s = Math.min(
@@ -154,19 +149,13 @@ const ScaledPreview = ({
 				cBox.height / iBox.height
 			);
 
-			// Ograniczamy skalę, żeby nie powiększała małych elementów w nieskończoność
-			// i ustawiamy margines bezpieczeństwa (0.85 zamiast 0.9 dla lepszego wyglądu)
 			setScale(Math.min(s * 0.85, 1));
 		};
 
-		// Wywołujemy od razu
 		updateScale();
 
-		// Opcjonalnie: małe opóźnienie (timeout), aby upewnić się, że DOM jest gotowy
 		const timer = setTimeout(updateScale, 0);
 		return () => clearTimeout(timer);
-
-		// USUNIĘTO: window.addEventListener("resize", ...) - to powodowało błąd
 	}, [component, maxWidth, maxHeight]);
 
 	return (
@@ -179,7 +168,6 @@ const ScaledPreview = ({
 				alignItems: "center",
 				justifyContent: "center",
 				overflow: "hidden",
-				// Dodajemy to, aby kontener nie "zapadał się" w flexboxie
 				flexShrink: 0,
 			}}
 		>
@@ -188,7 +176,7 @@ const ScaledPreview = ({
 				style={{
 					transform: `scale(${scale})`,
 					transformOrigin: "center center",
-					display: "flex", // Upewniamy się, że content centruje SVG
+					display: "flex",
 					alignItems: "center",
 					justifyContent: "center",
 				}}
@@ -215,7 +203,6 @@ const Toolbox = ({
 	onSave,
 	onLoad,
 	onExport,
-	// --- NOWE PROPSY ---
 	isSimulationRunning,
 	onToggleSimulation,
 	onReset,
@@ -290,7 +277,6 @@ const Toolbox = ({
 						flexDirection: "column",
 					}}
 				>
-					{/* --- SEKCJA SYMULACJI (NOWA) --- */}
 					<button
 						onClick={onToggleSimulation}
 						title={
@@ -307,7 +293,7 @@ const Toolbox = ({
 							borderRadius: 4,
 							background: isSimulationRunning
 								? "#ffcccc"
-								: "#ccffcc", // Czerwony jak stop, Zielony jak start
+								: "#ccffcc",
 							fontWeight: "bold",
 						}}
 					>
@@ -319,7 +305,6 @@ const Toolbox = ({
 						<span>{isSimulationRunning ? "Stop" : "Start"}</span>
 					</button>
 
-					{/* Pasek narzędzi: Reset, Kolory */}
 					<div style={{ display: "flex", gap: 4 }}>
 						<button
 							onClick={onReset}
@@ -339,7 +324,6 @@ const Toolbox = ({
 							<RotateCcw size={16} />
 						</button>
 
-						{/* --- PRZYCISK KOLORÓW --- */}
 						<button
 							onClick={onToggleColors}
 							title={

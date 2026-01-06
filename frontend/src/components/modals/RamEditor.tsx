@@ -40,13 +40,9 @@ export const RamEditor: React.FC<RamEditorProps> = ({
 	return (
 		<div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
 			<div className="bg-white rounded-lg shadow-2xl w-[600px] flex flex-col border border-gray-400 overflow-hidden font-sans">
-				{/* Header */}
-
-				{/* Content */}
 				<div className="flex-1 overflow-auto p-0 bg-white max-h-[65vh]">
 					<table className="ram-table">
 						<thead>
-							{/* Główny nagłówek */}
 							<tr>
 								<th colSpan={4} className="main-header addr-bg">
 									ADRES (A)
@@ -55,7 +51,6 @@ export const RamEditor: React.FC<RamEditorProps> = ({
 									DANE (D)
 								</th>
 							</tr>
-							{/* Nagłówek bitów */}
 							<tr className="sub-header">
 								<th>A3</th>
 								<th>A2</th>
@@ -70,7 +65,6 @@ export const RamEditor: React.FC<RamEditorProps> = ({
 						<tbody>
 							{Array.from({ length: 16 }).map((_, addrIdx) => (
 								<tr key={addrIdx}>
-									{/* Adresy (szare tło, read-only) */}
 									<td className="addr-cell">
 										{getAddrBit(addrIdx, 3)}
 									</td>
@@ -83,8 +77,6 @@ export const RamEditor: React.FC<RamEditorProps> = ({
 									<td className="addr-cell">
 										{getAddrBit(addrIdx, 0)}
 									</td>
-
-									{/* Dane (klikalne kratki) */}
 									{[3, 2, 1, 0].map((bitPos) => {
 										const isSet =
 											getDataBit(
@@ -131,8 +123,6 @@ export const RamEditor: React.FC<RamEditorProps> = ({
 					</button>
 				</div>
 			</div>
-
-			{/* Style CSS */}
 			<style>{`
         .ram-table {
           width: 100%;

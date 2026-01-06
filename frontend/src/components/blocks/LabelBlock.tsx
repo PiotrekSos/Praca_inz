@@ -8,7 +8,7 @@ type Props = {
 	height: number;
 	onChange: (newText: string) => void;
 	onResize: (width: number, height: number) => void;
-	isSelected?: boolean; // Nowy prop
+	isSelected?: boolean;
 };
 
 const LabelBlock: React.FC<Props> = ({
@@ -17,16 +17,14 @@ const LabelBlock: React.FC<Props> = ({
 	height,
 	onChange,
 	onResize,
-	isSelected = false, // Domyślnie fałsz
+	isSelected = false,
 }) => {
 	const [editing, setEditing] = useState(false);
 	const [value, setValue] = useState(text);
-
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const CustomHandle = React.forwardRef<HTMLDivElement, any>((props, ref) => {
 		const { handleAxis, ...restProps } = props;
 
-		// KLUCZOWA ZMIANA: Jeśli nie zaznaczony, nie renderujemy uchwytu
 		if (!isSelected) return null;
 
 		return (
@@ -73,7 +71,6 @@ const LabelBlock: React.FC<Props> = ({
 			minConstraints={[50, 30]}
 			maxConstraints={[800, 600]}
 			axis="both"
-			// Zawsze przekazujemy komponent, ale on sam zdecyduje czy się wyświetlić (powyżej)
 			handle={<CustomHandle />}
 			draggableOpts={{ enableUserSelectHack: false }}
 		>

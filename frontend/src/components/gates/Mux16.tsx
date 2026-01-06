@@ -3,7 +3,7 @@ import React from "react";
 interface GateProps {
 	inputs?: number[];
 	outputs?: number[];
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 }
 
 const Mux16: React.FC<GateProps> = ({
@@ -28,7 +28,6 @@ const Mux16: React.FC<GateProps> = ({
 				rx="6"
 			/>
 
-			{/* Linie wejściowe danych (D0-D15) */}
 			{[...Array(16)].map((_, i) => (
 				<line
 					key={i}
@@ -41,7 +40,6 @@ const Mux16: React.FC<GateProps> = ({
 				/>
 			))}
 
-			{/* Linie sterujące (A0-A3) - inputs[16-19] */}
 			<line
 				x1="40"
 				y1="0"
@@ -75,7 +73,6 @@ const Mux16: React.FC<GateProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* Linia Enable (20) - DÓŁ */}
 			<line
 				x1="60"
 				y1="340"
@@ -93,7 +90,6 @@ const Mux16: React.FC<GateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Linie wyjściowe */}
 			<line
 				x1="95"
 				y1="165"
@@ -112,7 +108,6 @@ const Mux16: React.FC<GateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Etykiety wejść */}
 			{[...Array(16)].map((_, i) => (
 				<text
 					key={`lbl${i}`}
@@ -127,7 +122,6 @@ const Mux16: React.FC<GateProps> = ({
 				</text>
 			))}
 
-			{/* Wyjście */}
 			<text
 				x="80"
 				y="168"
@@ -139,7 +133,6 @@ const Mux16: React.FC<GateProps> = ({
 				!Y
 			</text>
 
-			{/* Adresowe wejścia */}
 			{["A0", "A1", "A2", "A3"].map((a, i) => (
 				<text
 					key={a}

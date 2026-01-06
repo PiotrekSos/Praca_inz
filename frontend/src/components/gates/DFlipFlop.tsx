@@ -3,7 +3,7 @@ import React from "react";
 interface FlipFlopProps {
 	inputs?: number[];
 	outputs?: number[];
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 }
 
 const DFlipFlop: React.FC<FlipFlopProps> = ({
@@ -11,7 +11,6 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({
 	outputs = [],
 	showColors = true,
 }) => {
-	// Funkcja pomocnicza
 	const getColor = (val: number | undefined) =>
 		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
 	const bodyColor = showColors ? "#1976d2" : "black";
@@ -19,7 +18,6 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({
 
 	return (
 		<svg width="120" height="80">
-			{/* Linie wejściowe */}
 			<line
 				x1="10"
 				y1="35"
@@ -54,7 +52,6 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* Prostokąt */}
 			<rect
 				x="30"
 				y="20"
@@ -83,7 +80,6 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({
 				strokeWidth="1.5"
 			/>
 
-			{/* Etykiety wejść */}
 			<text
 				x="35"
 				y="35"
@@ -121,7 +117,6 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({
 				!R
 			</text>
 
-			{/* Linie wyjściowe */}
 			<line
 				x1="90"
 				y1="35"
@@ -139,7 +134,6 @@ const DFlipFlop: React.FC<FlipFlopProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* Etykiety wyjść */}
 			<text
 				x="78"
 				y="35"

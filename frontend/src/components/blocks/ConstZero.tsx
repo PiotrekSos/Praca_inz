@@ -5,7 +5,6 @@ interface Props {
 }
 
 const ConstZero: React.FC<Props> = ({ showColors = true }) => {
-	// Dla zera logicznego, kolor wyjścia to zazwyczaj niebieski (ten sam co ramki)
 	const color = showColors ? "#1976d2" : "black";
 
 	return (
@@ -32,7 +31,6 @@ const ConstZero: React.FC<Props> = ({ showColors = true }) => {
 				0
 			</text>
 
-			{/* nóżka wyjściowa */}
 			<line
 				x1="80"
 				y1="30"

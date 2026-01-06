@@ -145,7 +145,6 @@ export const useCircuitActions = ({
 		[connections, pending, setBlocks, setConnections, setPending]
 	);
 
-	// Obsługa klawisza Delete
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if ((e.key === "Delete" || e.key === "Backspace") && selection) {
@@ -155,8 +154,6 @@ export const useCircuitActions = ({
 						const newBlocks = prevBlocks.filter(
 							(b) => b.id !== blockId
 						);
-						// Musimy filtrować połączenia wewnątrz settera lub pobrać je z zewnątrz
-						// Dla uproszczenia zakładamy, że connections jest aktualne z propsów
 						const newConnections = connections.filter(
 							(c) =>
 								c.from.blockId !== blockId &&

@@ -3,7 +3,7 @@ import React from "react";
 interface NorGate8Props {
 	inputs?: number[];
 	outputs?: number[];
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 }
 
 const NorGate8: React.FC<NorGate8Props> = ({
@@ -17,7 +17,6 @@ const NorGate8: React.FC<NorGate8Props> = ({
 
 	return (
 		<svg width="160" height="160">
-			{/* Linie wejściowe */}
 			<line
 				x1="0"
 				y1="28"
@@ -83,7 +82,6 @@ const NorGate8: React.FC<NorGate8Props> = ({
 				strokeWidth="3"
 			/>
 
-			{/* Kształt NOR (lekko przesunięty w lewo) */}
 			<path
 				d="M35,20 Q85,80 35,140 Q110,140 130,80 Q110,20 35,20 Z"
 				fill="white"
@@ -91,7 +89,6 @@ const NorGate8: React.FC<NorGate8Props> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Bańka negacji */}
 			<circle
 				cx="135"
 				cy="80"
@@ -101,7 +98,6 @@ const NorGate8: React.FC<NorGate8Props> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Wyjście */}
 			<line
 				x1="140"
 				y1="80"

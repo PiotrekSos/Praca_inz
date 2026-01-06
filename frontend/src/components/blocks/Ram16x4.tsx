@@ -3,7 +3,7 @@ import React from "react";
 interface RamProps {
 	inputs?: number[];
 	outputs?: number[];
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 }
 
 const Ram16x4: React.FC<RamProps> = ({
@@ -11,16 +11,13 @@ const Ram16x4: React.FC<RamProps> = ({
 	outputs = [],
 	showColors = true,
 }) => {
-	// Kolor główny (obudowa, tekst)
 	const mainColor = showColors ? "#1976d2" : "black";
 
-	// Funkcja pomocnicza do kolorów wejść/wyjść
 	const getPinColor = (val: number | undefined) =>
 		showColors ? (val === 1 ? "green" : "#1976d2") : "black";
 
 	return (
 		<svg width="140" height="180" viewBox="0 0 140 180">
-			{/* Obudowa */}
 			<rect
 				x="30"
 				y="20"
@@ -45,7 +42,6 @@ const Ram16x4: React.FC<RamProps> = ({
 				PAMIĘĆ RAM 16 x 4
 			</text>
 
-			{/* --- Linie Wejściowe DANYCH (D0-D3) --- */}
 			{[0, 1, 2, 3].map((i) => (
 				<React.Fragment key={`d-${i}`}>
 					<line
@@ -68,7 +64,6 @@ const Ram16x4: React.FC<RamProps> = ({
 				</React.Fragment>
 			))}
 
-			{/* --- Linie Wejściowe ADRESOWE (A0-A3) --- */}
 			{[0, 1, 2, 3].map((i) => (
 				<React.Fragment key={`a-${i}`}>
 					<line
@@ -91,7 +86,6 @@ const Ram16x4: React.FC<RamProps> = ({
 				</React.Fragment>
 			))}
 
-			{/* --- Linie Sterujące (!CS, !WE) --- */}
 			<line
 				x1="70"
 				y1="0"
@@ -100,7 +94,7 @@ const Ram16x4: React.FC<RamProps> = ({
 				stroke={getPinColor(inputs[8])}
 				strokeWidth="3"
 			/>
-			{/* Kółko negacji !CS */}
+
 			<circle
 				cx="70"
 				cy="15"
@@ -128,7 +122,7 @@ const Ram16x4: React.FC<RamProps> = ({
 				stroke={getPinColor(inputs[9])}
 				strokeWidth="3"
 			/>
-			{/* Kółko negacji !WE */}
+
 			<circle
 				cx="70"
 				cy="165"
@@ -148,7 +142,6 @@ const Ram16x4: React.FC<RamProps> = ({
 				!WE
 			</text>
 
-			{/* --- Linie Wyjściowe DANYCH (!Q0-!Q3) --- */}
 			{[0, 1, 2, 3].map((i) => (
 				<React.Fragment key={`q-${i}`}>
 					<circle

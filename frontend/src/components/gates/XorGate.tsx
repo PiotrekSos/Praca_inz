@@ -17,7 +17,6 @@ const XorGate: React.FC<XorGateProps> = ({
 
 	return (
 		<svg width="100" height="60">
-			{/* --- linie wejściowe --- */}
 			<line
 				x1="0"
 				y1="20"
@@ -35,7 +34,6 @@ const XorGate: React.FC<XorGateProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* --- Dodatkowa krzywa wejściowa (Shield) --- */}
 			<path
 				d="M 10 6 Q 34 30 10 54"
 				fill="none"
@@ -43,7 +41,6 @@ const XorGate: React.FC<XorGateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* --- kształt bramki OR (Korpus) --- */}
 			<path
 				d="M 20 6 H 38 A 48 48 0 0 1 80 30 A 48 48 0 0 1 38 54 H 20 Q 44 30 20 6 Z"
 				fill="white"
@@ -51,7 +48,6 @@ const XorGate: React.FC<XorGateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* --- linia wyjściowa --- */}
 			<line
 				x1="80"
 				y1="30"

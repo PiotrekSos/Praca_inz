@@ -5,7 +5,7 @@ export const useUnsavedChangesWarning = (shouldWarn: boolean) => {
 		const handleBeforeUnload = (e: BeforeUnloadEvent) => {
 			if (shouldWarn) {
 				e.preventDefault();
-				e.returnValue = ""; // Wymagane przez niektóre przeglądarki
+				e.returnValue = "";
 				return "";
 			}
 		};

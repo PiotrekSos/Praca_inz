@@ -3,7 +3,7 @@ import React from "react";
 interface NorGateProps {
 	inputs?: number[];
 	outputs?: number[];
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 }
 
 const NorGate: React.FC<NorGateProps> = ({
@@ -17,7 +17,6 @@ const NorGate: React.FC<NorGateProps> = ({
 
 	return (
 		<svg width="100" height="60">
-			{/* --- linie wejściowe --- */}
 			<line
 				x1="0"
 				y1="20"
@@ -35,7 +34,6 @@ const NorGate: React.FC<NorGateProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* --- kształt bramki NOR (Baza OR z prostym odcinkiem) --- */}
 			<path
 				d="M 20 6 H 38 A 48 48 0 0 1 80 30 A 48 48 0 0 1 38 54 H 20 Q 44 30 20 6 Z"
 				fill="white"
@@ -43,7 +41,6 @@ const NorGate: React.FC<NorGateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* --- kółeczko negacji --- */}
 			<circle
 				cx="85"
 				cy="30"
@@ -53,7 +50,6 @@ const NorGate: React.FC<NorGateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* --- linia wyjściowa --- */}
 			<line
 				x1="90"
 				y1="30"

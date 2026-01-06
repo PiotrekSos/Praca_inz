@@ -1,9 +1,9 @@
 import React from "react";
 
 interface NandGateProps {
-	inputs?: number[]; // mogą być undefined
+	inputs?: number[];
 	outputs?: number[];
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 }
 
 const NandGate: React.FC<NandGateProps> = ({
@@ -17,7 +17,6 @@ const NandGate: React.FC<NandGateProps> = ({
 
 	return (
 		<svg width="100" height="60">
-			{/* --- linie wejściowe (POZYCJE NIENARUSZONE) --- */}
 			<line
 				x1="0"
 				y1="20"
@@ -35,7 +34,6 @@ const NandGate: React.FC<NandGateProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* --- kształt bramki AND (baza dla NAND) --- */}
 			<path
 				d="M 20 6 H 56 A 24 24 0 0 1 56 54 H 20 Z"
 				fill="white"
@@ -43,7 +41,6 @@ const NandGate: React.FC<NandGateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* --- kółeczko negacji --- */}
 			<circle
 				cx="85"
 				cy="30"
@@ -53,7 +50,6 @@ const NandGate: React.FC<NandGateProps> = ({
 				fill="white"
 			/>
 
-			{/* --- linia wyjściowa --- */}
 			<line
 				x1="90"
 				y1="30"

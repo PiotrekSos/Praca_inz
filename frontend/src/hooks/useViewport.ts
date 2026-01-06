@@ -14,7 +14,6 @@ export const useViewport = () => {
 	});
 	const [isPanning, setIsPanning] = useState(false);
 
-	// Obsługa przybliżania (Zoom)
 	const handleWheel = useCallback(
 		(e: React.WheelEvent) => {
 			e.preventDefault();
@@ -39,18 +38,15 @@ export const useViewport = () => {
 		[viewport]
 	);
 
-	// Obsługa przesuwania (Pan) - Start
 	const startPanning = useCallback((e: React.MouseEvent) => {
 		if (e.button === 2) {
-			// Prawy przycisk myszy
 			e.preventDefault();
 			setIsPanning(true);
-			return true; // Zwracamy true, żeby wiedzieć, że panowanie się zaczęło
+			return true;
 		}
 		return false;
 	}, []);
 
-	// Obsługa przesuwania - Ruch
 	const pan = useCallback(
 		(e: React.MouseEvent) => {
 			if (isPanning) {
@@ -64,7 +60,6 @@ export const useViewport = () => {
 		[isPanning]
 	);
 
-	// Obsługa przesuwania - Stop
 	const stopPanning = useCallback(() => {
 		setIsPanning(false);
 	}, []);

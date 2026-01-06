@@ -10,12 +10,10 @@ export const getBlockPinLayout = (block: Block): PinConfig[] => {
 	const pins: PinConfig[] = [];
 
 	switch (block.type) {
-		// --- ŹRÓDŁA SYGNAŁU (Teraz mają wyjścia!) ---
 		case "CLOCK":
 		case "ONE":
 		case "ZERO":
 		case "TOGGLE": {
-			// Te bloki mają jedno wyjście po prawej stronie
 			pins.push({
 				type: "output",
 				index: 0,
@@ -24,9 +22,7 @@ export const getBlockPinLayout = (block: Block): PinConfig[] => {
 			break;
 		}
 
-		// --- WYJŚCIA (LAMP) ---
 		case "LAMP": {
-			// Lampa ma jedno wejście po lewej
 			pins.push({
 				type: "input",
 				index: 0,
@@ -35,9 +31,7 @@ export const getBlockPinLayout = (block: Block): PinConfig[] => {
 			break;
 		}
 
-		// --- PAMIĘĆ RAM (Poprawione pozycje) ---
 		case "RAM_16x4": {
-			// D0-D3 (Wejścia danych)
 			for (let i = 0; i < 4; i++) {
 				pins.push({
 					type: "input",
@@ -45,7 +39,6 @@ export const getBlockPinLayout = (block: Block): PinConfig[] => {
 					style: { left: -6, top: 23 + i * 15 },
 				});
 			}
-			// A0-A3 (Adresy)
 			for (let i = 0; i < 4; i++) {
 				pins.push({
 					type: "input",
@@ -53,20 +46,17 @@ export const getBlockPinLayout = (block: Block): PinConfig[] => {
 					style: { left: -6, top: 93 + i * 15 },
 				});
 			}
-			// !CS (Góra)
 			pins.push({
 				type: "input",
 				index: 8,
 				style: { left: 63, top: -7 },
 			});
-			// !WE (Dół)
 			pins.push({
 				type: "input",
 				index: 9,
 				style: { left: 63, top: 173 },
-			}); // 180 height - 7
+			});
 
-			// Q0-Q3 (Wyjścia) - Przywrócono "right: -47" z Twojego oryginalnego kodu
 			for (let i = 0; i < 4; i++) {
 				pins.push({
 					type: "output",
@@ -77,7 +67,6 @@ export const getBlockPinLayout = (block: Block): PinConfig[] => {
 			break;
 		}
 
-		// --- MULTIPLEKSERY ---
 		case "MUX4": {
 			for (let i = 0; i < 4; i++)
 				pins.push({
@@ -129,7 +118,6 @@ export const getBlockPinLayout = (block: Block): PinConfig[] => {
 			break;
 		}
 
-		// --- DEMULTIPLEKSERY ---
 		case "DEMUX4": {
 			pins.push({
 				type: "input",
@@ -181,7 +169,6 @@ export const getBlockPinLayout = (block: Block): PinConfig[] => {
 			break;
 		}
 
-		// --- PRZERZUTNIKI ---
 		case "D_FLIPFLOP":
 		case "T_FLIPFLOP": {
 			pins.push({ type: "input", index: 0, style: { left: 4, top: 28 } });
@@ -236,7 +223,6 @@ export const getBlockPinLayout = (block: Block): PinConfig[] => {
 			break;
 		}
 
-		// --- BRAMKI WIELOWEJŚCIOWE ---
 		case "NAND_4":
 		case "NOR_4": {
 			block.inputs.forEach((_, i) =>
@@ -270,25 +256,20 @@ export const getBlockPinLayout = (block: Block): PinConfig[] => {
 			break;
 		}
 
-		// --- ETYKIETA (Bez pinów) ---
 		case "LABEL":
 			break;
 
-		// --- STANDARDOWE BRAMKI (AND, OR, NOT, BUFFER itp.) ---
 		default: {
-			// Inputs
 			block.inputs.forEach((_, i) => {
 				pins.push({
 					type: "input",
 					index: i,
-					// Dla bramek 2-wejściowych centrujemy (13/33), dla 1-wejściowych (23)
 					style: {
 						left: -7,
 						top: block.inputs.length === 1 ? 23 : i === 0 ? 13 : 33,
 					},
 				});
 			});
-			// Output
 			pins.push({
 				type: "output",
 				index: 0,

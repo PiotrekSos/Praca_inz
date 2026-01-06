@@ -11,7 +11,6 @@ export const exportToImage = async (
 		return;
 	}
 
-	// 1. Obliczanie Bounding Box
 	let minX = Infinity;
 	let minY = Infinity;
 	let maxX = -Infinity;

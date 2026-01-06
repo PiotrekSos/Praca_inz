@@ -3,7 +3,7 @@ import React from "react";
 interface GateProps {
 	inputs?: number[];
 	outputs?: number[];
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 }
 
 const Demux16: React.FC<GateProps> = ({
@@ -29,7 +29,6 @@ const Demux16: React.FC<GateProps> = ({
 				rx="6"
 			/>
 
-			{/* Wejście D */}
 			<line
 				x1="0"
 				y1="165"
@@ -49,7 +48,6 @@ const Demux16: React.FC<GateProps> = ({
 				D
 			</text>
 
-			{/* Wejścia sterujące (A0-A3) */}
 			{[0, 1, 2, 3].map((i) => (
 				<line
 					key={i}
@@ -57,12 +55,11 @@ const Demux16: React.FC<GateProps> = ({
 					y1="0"
 					x2={40 + i * 15}
 					y2="10"
-					stroke={getColor(inputs[1 + i])} // Zakładając inputs[1-4] to A0-A3
+					stroke={getColor(inputs[1 + i])}
 					strokeWidth="3"
 				/>
 			))}
 
-			{/* Linia Enable (5) - DÓŁ */}
 			<line
 				x1="60"
 				y1="340"
@@ -80,7 +77,6 @@ const Demux16: React.FC<GateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Wyjścia */}
 			{[...Array(16)].map((_, i) => (
 				<line
 					key={i}
@@ -119,7 +115,6 @@ const Demux16: React.FC<GateProps> = ({
 				/>
 			))}
 
-			{/* Adresowe wejścia */}
 			{["A0", "A1", "A2", "A3"].map((a, i) => (
 				<text
 					key={a}

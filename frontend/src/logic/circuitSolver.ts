@@ -3,7 +3,6 @@ import type { Block, Connection } from "../types";
 export const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 	const newBlocks = blocks.map((b) => ({ ...b, inputs: [...b.inputs] }));
 
-	// 1. Ustawianie wyjść dla źródeł (ONE, ZERO, FLIPFLOPS state)
 	for (const b of newBlocks) {
 		switch (b.type) {
 			case "ONE":
@@ -26,17 +25,13 @@ export const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 		}
 	}
 
-	// 2. Przesyłanie sygnałów przez połączenia
-	// Iterujemy kilka razy, aby sygnał zdążył się rozpropagować (opcjonalne w prostej symulacji, ale bezpieczne)
 	for (let i = 0; i < newBlocks.length; i++) {
-		// Zerowanie wejść (chyba że to źródła)
 		for (const b of newBlocks) {
 			if (!["ONE", "ZERO", "TOGGLE", "CLOCK", "LABEL"].includes(b.type)) {
 				b.inputs = b.inputs.map(() => 0);
 			}
 		}
 
-		// Przesyłanie stanu z wyjść na wejścia
 		for (const c of connections) {
 			const from = newBlocks.find((b) => b.id === c.from.blockId);
 			const to = newBlocks.find((b) => b.id === c.to.blockId);
@@ -47,7 +42,6 @@ export const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 			}
 		}
 
-		// 3. Obliczanie logiki bramek
 		for (const b of newBlocks) {
 			switch (b.type) {
 				case "AND":
@@ -75,7 +69,6 @@ export const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					b.outputs[0] = b.inputs[0] || 0;
 					break;
 
-				// --- PRZERZUTNIKI ---
 				case "D_FLIPFLOP": {
 					const [D, CLK, S_low, R_low] = b.inputs;
 					if (!("state" in b)) b.state = 0;
@@ -123,34 +116,26 @@ export const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					break;
 				}
 				case "SR_FLIPFLOP": {
-					// Pobieramy 3 wejścia: S, R oraz Zegar (CLK)
 					const [S, R, CLK] = b.inputs;
 
-					// Inicjalizacja stanu, jeśli nie istnieje
 					if (!("state" in b)) b.state = 0;
 					if (!("prevClock" in b)) b.prevClock = 0;
 
-					// Logika synchroniczna - reagujemy tylko na zbocze narastające zegara (0 -> 1)
 					if (CLK === 1 && b.prevClock === 0) {
 						if (S === 1 && R === 0) {
-							b.state = 1; // Set
+							b.state = 1;
 						} else if (S === 0 && R === 1) {
-							b.state = 0; // Reset
+							b.state = 0;
 						}
-						// Jeśli S=0, R=0 -> Pamięć (bez zmian)
-						// Jeśli S=1, R=1 -> Stan zabroniony (w symulacji traktujemy jako brak zmian)
 					}
 
-					// Aktualizacja wyjść
 					b.outputs[0] = Number(b.state);
 					b.outputs[1] = Number(!b.state);
 
-					// Zapamiętanie stanu zegara dla następnego cyklu
 					b.prevClock = CLK;
 					break;
 				}
 
-				// --- PAMIĘĆ RAM (7489 - Wyjścia Zanegowane) ---
 				case "RAM_16x4": {
 					const dataIn = b.inputs.slice(0, 4);
 					const addressIn = b.inputs.slice(4, 8);
@@ -165,7 +150,6 @@ export const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					if (addressIn[2] === 1) address |= 4;
 					if (addressIn[3] === 1) address |= 8;
 
-					// ZAPIS (CS=0, WE=0)
 					if (CS_low === 0 && WE_low === 0) {
 						let dataNibble = 0;
 						if (dataIn[0] === 1) dataNibble |= 1;
@@ -174,25 +158,19 @@ export const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 						if (dataIn[3] === 1) dataNibble |= 8;
 
 						b.memory[address] = dataNibble;
-						b.outputs.fill(1); // Stan nieaktywny dla wyjść negowanych
-					}
-					// ODCZYT (CS=0, WE=1)
-					else if (CS_low === 0 && WE_low === 1) {
+						b.outputs.fill(1);
+					} else if (CS_low === 0 && WE_low === 1) {
 						const dataNibble = b.memory[address];
-						// Wyjścia zanegowane (!Q)
 						b.outputs[0] = (dataNibble >> 0) & 1 ? 0 : 1;
 						b.outputs[1] = (dataNibble >> 1) & 1 ? 0 : 1;
 						b.outputs[2] = (dataNibble >> 2) & 1 ? 0 : 1;
 						b.outputs[3] = (dataNibble >> 3) & 1 ? 0 : 1;
-					}
-					// NIEAKTYWNY
-					else {
+					} else {
 						b.outputs.fill(1);
 					}
 					break;
 				}
 
-				// --- MUX / DEMUX ---
 				case "MUX4": {
 					const dataInputs = b.inputs.slice(0, 4);
 					const selectBits = b.inputs.slice(4, 6);
@@ -200,7 +178,7 @@ export const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 					if (E_low === 0) {
 						const sel = (selectBits[0] << 1) | selectBits[1];
 						const selectedValue = dataInputs[sel] ?? 0;
-						b.outputs[0] = selectedValue === 1 ? 0 : 1; // Negacja na wyjściu
+						b.outputs[0] = selectedValue === 1 ? 0 : 1;
 					} else {
 						b.outputs[0] = 1;
 					}
@@ -217,7 +195,7 @@ export const evaluateCircuit = (blocks: Block[], connections: Connection[]) => {
 							(selectBits[2] << 1) |
 							selectBits[3];
 						const selectedValue = dataInputs[sel] ?? 0;
-						b.outputs[0] = selectedValue === 1 ? 0 : 1; // Negacja
+						b.outputs[0] = selectedValue === 1 ? 0 : 1;
 					} else {
 						b.outputs[0] = 1;
 					}

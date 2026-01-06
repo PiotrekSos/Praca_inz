@@ -3,7 +3,7 @@ import React from "react";
 type ToggleSwitchProps = {
 	value: boolean;
 	onChange: (newValue: boolean) => void;
-	showColors?: boolean; // <-- Nowy prop
+	showColors?: boolean;
 };
 
 const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
@@ -16,12 +16,8 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
 		onChange(!value);
 	};
 
-	// Kolory
 	const mainStroke = showColors ? "#1976d2" : "black";
 
-	// Tło suwaka:
-	// Kolor: Niebieski (ON) / Szary (OFF)
-	// Mono: Czarny (ON) / Biały (OFF)
 	const trackFill = showColors
 		? value
 			? "#1976d2"
@@ -30,7 +26,6 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
 		? "black"
 		: "white";
 
-	// W trybie mono dodajemy obrys dla białego tła, żeby było je widać
 	const trackStroke = !showColors ? "black" : "none";
 	const trackStrokeWidth = !showColors ? 1 : 0;
 
@@ -38,7 +33,6 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
 
 	return (
 		<svg width="100" height="60">
-			{/* Ramka zewnętrzna */}
 			<rect
 				x="5"
 				y="10"
@@ -51,7 +45,6 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Tor suwaka */}
 			<rect
 				x="15"
 				y="20"
@@ -65,7 +58,6 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
 				cursor="pointer"
 			/>
 
-			{/* Gałka */}
 			<circle
 				cx={value ? 55 : 25}
 				cy="30"
@@ -77,7 +69,6 @@ const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
 				cursor="pointer"
 			/>
 
-			{/* nóżka wyjściowa */}
 			<line
 				x1="75"
 				y1="30"

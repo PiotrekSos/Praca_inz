@@ -31,7 +31,7 @@ const EditableWire: React.FC<EditableWireProps> = ({
 	onChange: (newPoints: { x: number; y: number }[]) => void;
 	isSelected: boolean;
 	onSelect: () => void;
-	scale: number; // --- NOWY PROP ---
+	scale: number;
 	showColors: boolean;
 }) => {
 	const fromRef = useRef(from);
@@ -152,14 +152,12 @@ const EditableWire: React.FC<EditableWireProps> = ({
 		onChange(merged.slice());
 	};
 
-	// --- ZAKTUALIZOWANA FUNKCJA RUCHU ---
 	const getMovedPoint = (
 		p: Point,
 		isVertical: boolean,
 		dx: number,
 		dy: number
 	) =>
-		// Dzielimy przesunięcie przez skalę!
 		isVertical
 			? { x: p.x + dx / scale, y: p.y }
 			: { x: p.x, y: p.y + dy / scale };
@@ -290,8 +288,6 @@ const EditableWire: React.FC<EditableWireProps> = ({
 					const pt = svg.createSVGPoint();
 					pt.x = e.clientX;
 					pt.y = e.clientY;
-					// getScreenCTM automatycznie uwzględnia zoom diva nadrzędnego!
-					// więc tutaj logika pozostaje prosta
 					const svgPoint = pt.matrixTransform(CTM.inverse());
 					const cx = svgPoint.x;
 					const cy = svgPoint.y;

@@ -17,7 +17,6 @@ const NotGate: React.FC<NotGateProps> = ({
 
 	return (
 		<svg width="100" height="60">
-			{/* Linia wejściowa */}
 			<line
 				x1="0"
 				y1="30"
@@ -27,7 +26,6 @@ const NotGate: React.FC<NotGateProps> = ({
 				strokeWidth="3"
 			/>
 
-			{/* Kształt bramki (Trójkąt) */}
 			<polygon
 				points="20,6 68,30 20,54"
 				fill="white"
@@ -35,7 +33,6 @@ const NotGate: React.FC<NotGateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Kółeczko negacji */}
 			<circle
 				cx="73"
 				cy="30"
@@ -45,7 +42,6 @@ const NotGate: React.FC<NotGateProps> = ({
 				strokeWidth="2"
 			/>
 
-			{/* Linia wyjściowa */}
 			<line
 				x1="78"
 				y1="30"

@@ -28,18 +28,14 @@ export const useFileHandler = ({
 	const handleSave = useCallback(() => {
 		const blocksForSave: JsonBlock[] = blocks.map((b) => {
 			if (b.type === "RAM_16x4" && b.memory) {
-				// Konwertujemy Uint8Array na zwykły obiekt { "0": val, "1": val... }
 				const memoryRecord: Record<string, number> = {};
 				b.memory.forEach((val, index) => {
 					memoryRecord[index] = val;
 				});
 
-				// Zwracamy blok z podmienioną pamięcią
 				return { ...b, memory: memoryRecord };
 			}
 
-			// NAPRAWA BŁĘDU LINTERA:
-			// Zmieniamy 'memory' na '_memory'. TypeScript/ESLint zazwyczaj ignoruje
 			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const { memory: _memory, ...rest } = b;
 			return rest as JsonBlock;
@@ -84,11 +80,9 @@ export const useFileHandler = ({
 			}
 
 			const restoredBlocks = data.blocks.map((b) => {
-				// Logika przywracania RAMu
 				if (b.type === "RAM_16x4" && b.memory) {
 					const mem = new Uint8Array(16);
 					for (let i = 0; i < 16; i++) {
-						// rzutowanie klucza obiektu na string
 						mem[i] = b.memory[String(i)] || 0;
 					}
 					return { ...b, memory: mem } as Block;

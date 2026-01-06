@@ -202,10 +202,8 @@ function App() {
 				onMouseUp={viewportHandlers.onMouseUp}
 				onMouseLeave={viewportHandlers.onMouseLeave}
 			>
-				{/* --- TUTAJ JEST KLUCZOWA ZMIANA --- */}
-				{/* Ten div musi obejmować wszystko co ma być na zdjęciu */}
 				<div
-					id="circuit-board" // <--- ID MUSI BYĆ TUTAJ (na kontenerze z transform)
+					id="circuit-board"
 					style={{
 						position: "absolute",
 						top: 0,
@@ -217,7 +215,6 @@ function App() {
 						pointerEvents: "none",
 					}}
 				>
-					{/* Bramki (Wewnątrz circuit-board) */}
 					{blocks.map((b) => (
 						<div
 							key={`${circuitVersion}-${b.id}`}
@@ -244,7 +241,6 @@ function App() {
 						</div>
 					))}
 
-					{/* SVG z liniami (Wewnątrz circuit-board) */}
 					<svg
 						style={{
 							position: "absolute",
