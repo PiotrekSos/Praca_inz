@@ -13,8 +13,8 @@ import { useViewport } from "./hooks/useViewport";
 import { useCircuitActions } from "./hooks/useCircuitActions";
 import { useSimulation } from "./hooks/useSimulation";
 import { RamEditor } from "./components/modals/RamEditor";
-import { runComprehensiveTests } from "./tests/simpleTest"; //
-import { runPerformanceTests } from "./tests/performanceTest.ts";
+//import { runComprehensiveTests } from "./tests/simpleTest"; //
+//import { runPerformanceTests } from "./tests/performanceTest.ts";
 
 function App() {
 	const [blocks, setBlocks] = useState<Block[]>([]);
@@ -73,8 +73,8 @@ function App() {
 					);
 				}
 			}
-			runComprehensiveTests();
-			runPerformanceTests();
+			//runComprehensiveTests();
+			//runPerformanceTests();
 		};
 
 		window.addEventListener("keydown", handleKeyDown);
