@@ -153,7 +153,7 @@ export const Junctions: React.FC<JunctionsProps> = ({
 				let fillColor = "#000";
 
 				if (showColors) {
-					fillColor = dot.isHigh ? "#green" : "#1976d2";
+					fillColor = dot.isHigh ? "green" : "#1976d2";
 				}
 
 				return (
