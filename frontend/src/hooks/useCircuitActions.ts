@@ -15,6 +15,7 @@ interface UseCircuitActionsProps {
 		from: { blockId: number; outputIndex?: number } | null;
 	}) => void;
 	viewport: { x: number; y: number; scale: number };
+	isModalOpen?: boolean;
 }
 
 export const useCircuitActions = ({
@@ -27,6 +28,7 @@ export const useCircuitActions = ({
 	pending,
 	setPending,
 	viewport,
+	isModalOpen = false,
 }: UseCircuitActionsProps) => {
 	const handleAddBlock = useCallback(
 		(type: BlockType, x?: number, y?: number) => {
@@ -147,6 +149,7 @@ export const useCircuitActions = ({
 
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
+			if (isModalOpen) return;
 			if ((e.key === "Delete" || e.key === "Backspace") && selection) {
 				if (selection.type === "block") {
 					const blockId = selection.id;
@@ -183,6 +186,7 @@ export const useCircuitActions = ({
 		setBlocks,
 		setConnections,
 		setSelection,
+		isModalOpen,
 	]);
 
 	return {

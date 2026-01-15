@@ -113,6 +113,7 @@ function App() {
 		pending,
 		setPending,
 		viewport,
+		isModalOpen: editingBlockId !== null,
 	});
 
 	const handleDrop = (e: React.DragEvent) => {
